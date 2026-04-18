@@ -1,0 +1,17 @@
+# Build recipe for KMUTT CPE thesis (XeLaTeX + BibTeX)
+# Usage:
+#   latexmk          — build main.pdf
+#   latexmk -pvc     — watch mode: rebuild on save
+#   latexmk -c       — clean intermediate files (keeps PDF)
+#   latexmk -C       — clean everything including PDF
+
+$pdf_mode = 5;                    # 5 = xelatex
+$bibtex_use = 2;                  # always run bibtex when .bib files present
+$pdflatex = 'xelatex -synctex=1 -interaction=nonstopmode %O %S';
+$xelatex  = 'xelatex -synctex=1 -interaction=nonstopmode %O %S';
+
+# Default target: main.tex
+@default_files = ('main.tex');
+
+# Keep the intermediate files that IDE PDF previewers need
+$clean_ext = 'synctex.gz acn acr alg glg glo gls ist lol nav snm';

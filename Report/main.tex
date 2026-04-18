@@ -1,0 +1,122 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% KMUTT CPE Thesis — main entry point
+% Compile with:  latexmk -xelatex main.tex
+% Or manually:   xelatex main → bibtex main → xelatex main → xelatex main
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[12pt,oneside,openright,a4paper]{cpe-english-project}
+
+\usepackage{polyglossia}
+\setdefaultlanguage{english}
+\setotherlanguage{thai}
+\newfontfamily\thaifont[Script=Thai,Scale=1.23]{TH Sarabun New}
+\defaultfontfeatures{Mapping=tex-text,Scale=1.0,LetterSpace=0.0}
+\setmainfont[Scale=1.0,LetterSpace=0,WordSpace=1.0,FakeStretch=1.0]{Times New Roman}
+\emergencystretch=10pt
+
+\graphicspath{{figures/}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Project metadata — edit these for your thesis
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\disstitleone{Project/Indep study title line 1}
+\def\disstitletwo{Project/Indep title line 2 (optional)}
+\def\dissauthor{Mr./Ms. Firstname1 Lastname1}
+\def\dissauthortwo{Mr./Ms. Firstname2 Lastname2}
+\def\dissauthorthree{Mr./Ms. Firstname3 Lastname3}
+
+\def\dissdegree{Bachelor of Engineering}
+\def\dissdegreeabrev{B.Eng}
+\def\dissyear{202x}
+\def\thaidissyear{256x}
+
+\def\dissadvisor{Assoc.Prof. My main advisor name , Ph.D.}
+\def\disscoadvisor{Assoc.Prof. My Co-advisor name, Ph.D.}
+\def\disscoadvisortwo{}
+\def\disscoadvisorthree{}
+\def\disscommitteetwo{Asst.Prof. Committee2, Ph.D.}
+\def\disscommitteethree{Asst.Prof. Committee3, Ph.D.}
+\def\disscommitteefour{}
+
+\def\worktype{Project}
+\def\disscredit{3}
+
+\def\fieldofstudy{Computer Engineering}
+\def\department{Computer Engineering}
+\def\faculty{Engineering}
+
+\def\thaifieldofstudy{วิศวกรรมคอมพิวเตอร์}
+\def\thaidepartment{วิศวกรรมคอมพิวเตอร์}
+\def\thaifaculty{วิศวกรรมศาสตร์}
+
+\def\appendixnames{Appendix}
+
+\def\thaiworktype{ปริญญานิพนธ์}
+\def\thaidisstitleone{หัวข้อปริญญานิพนธ์บรรทัดแรก}
+\def\thaidisstitletwo{หัวข้อปริญญานิพนธ์บรรทัดสอง}
+\def\thaidissauthor{นายสมศักดิ์ คอมพิวเตอร์}
+\def\thaidissauthortwo{นางสาวสมศรี คอมพิวเตอร์2}
+\def\thaidissauthorthree{นางสาวสมปอง คอมพิวเตอร์3}
+
+\def\thaidissadvisor{รศ.ดร.ที่ปรึกษา วิทยานิพนธ์}
+\def\thaidisscoadvisor{รศ.ดร.ที่ปรึกษา วิทยานิพนธ์ร่วม}
+\def\thaidisscoadvisortwo{}
+\def\thaidisscoadvisorthree{}
+\def\thaidissdegree{วิศวกรรมศาสตรบัณฑิต}
+
+\linespread{1.15}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% End of personal customization
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\textfraction}{0.1}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+
+\def\QED{\mbox{\rule[0pt]{1.5ex}{1.5ex}}}
+\def\proof{\noindent\hspace{2em}{\itshape Proof: }}
+\def\endproof{\hspace*{\fill}~\QED\par\endtrivlist\unskip}
+
+\begin{document}
+\pdfstringdefDisableCommands{\let\MakeUppercase\relax}
+
+\begin{center}
+  \includegraphics[width=2.8cm]{logo02.jpg}
+\end{center}
+\vspace*{-1cm}
+
+\maketitlepage
+\makesignaturepage
+
+\input{chapters/abstract-en}
+\input{chapters/abstract-th}
+\input{chapters/preface}
+
+\tableofcontents
+\listoftables
+\listoffigures
+
+\input{chapters/symbols}
+\input{chapters/vocab}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Main body %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{chapters/01-introduction}
+\input{chapters/02-background}
+\input{chapters/03-proposed-work}
+\input{chapters/04-implementation}
+\input{chapters/05-conclusions}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Bibliography %%%%%%%%%%%%%%%%%%%%%%%%%%
+\makeatletter
+\g@addto@macro{\UrlBreaks}{\UrlOrds}
+\makeatother
+
+\bibliographystyle{bibliography/kmutt}
+\bibliography{bibliography/string,bibliography/cpe}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Appendices %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{chapters/appendix-a}
+
+\end{document}
