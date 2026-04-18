@@ -1,8 +1,32 @@
-\chapter{Background Theory and Related Work}
+\chapter{BACKGROUND KNOWLEDGE
+TOOLS AND RELATED PRODUCTS
+}
 
-Explain theory, algorithms, protocols, or existing research works and tools related to your work. Cite references like this~\cite{santi05b}, or multiple~\cite{bworld,hypersense}.
+This chapter will delve into the essential background knowledge and technologies required for this project. Each tool will be discussed in detail, highlighting its benefits and specific uses throughout the development process. Additionally, information regarding projects related to email cleansing models and the monitoring services of Kubernetes resources will be provided.
 
-\section{Related Work}
+\section{Technical Background}
+The foundational background necessary to understand the Adnexio project. It is divided into two key areas: the technical background, which outlines the tools, frameworks, and infrastructure supporting the platform, and the market research, which analyzes competitors and industry trends in the luxury concierge sector. Together, these sections provide both the technological and business context for the project.
+
+\subsection{System Architecture}
+\subsubsection{Monolithic Architecture}
+
+Monolithic architecture refers to a traditional software design pattern in which all components of an application --- including user interface, business logic, and data access layers --- are packaged and deployed as a single (Figure~\ref{fig:monolithic-architecture}), unified unit. In this model, the application runs as one process, often supported by a single codebase and a centralized database. \cite{thalor2024monolithic} describe monolithic systems as tightly coupled, meaning that changes in one part of the application often necessitate redeployment of the entire system.
+
+The primary advantage of monolithic architecture lies in its simplicity. It is straightforward to develop, test, and deploy, making it particularly suitable for small teams and minimum viable products (MVPs). Since all components share the same memory space and runtime environment, monolithic applications also benefit from reduced communication overhead compared to distributed systems. This architecture enables rapid iteration during early development phases, where time-to-market and cost efficiency are prioritized.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\textwidth]{ch2-monolithic-architecture-1.png}
+  \caption{A Diagram of Monolithic Architecture \cite{camunda2023monolith}}
+  \label{fig:monolithic-architecture}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\textwidth]{ch2-monolithic-architecture-2.png}
+  \caption{A diagram representing a modular monolithic architecture, where separate teams own distinct business domains such as Order and Consumer Management within a single, unified application \cite{richardson2023monolithic}}
+  \label{fig:modular-monolithic-architecture}
+\end{figure}
 
 \section{Algorithms}
 
