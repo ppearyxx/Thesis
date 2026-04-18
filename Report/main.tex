@@ -13,32 +13,32 @@
 \setmainfont[Scale=1.0,LetterSpace=0,WordSpace=1.0,FakeStretch=1.0]{Times New Roman}
 \emergencystretch=10pt
 
-\graphicspath{{figures/}}
+\graphicspath{{./figures/}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Project metadata — edit these for your thesis
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\def\disstitleone{Project/Indep study title line 1}
-\def\disstitletwo{Project/Indep title line 2 (optional)}
-\def\dissauthor{Mr./Ms. Firstname1 Lastname1}
-\def\dissauthortwo{Mr./Ms. Firstname2 Lastname2}
-\def\dissauthorthree{Mr./Ms. Firstname3 Lastname3}
+\def\disstitleone{Adnexio - Application for booking hi-end experiences.}
+%\def\disstitletwo{Project/Indep title line 2 (optional)}
+\def\dissauthor{Ms. Pornchanok Pinnuwat}          % 1st member
+\def\dissauthortwo{Mr. Thanakit Chokbunsuwan}       % 2nd member (optional)
+\def\dissauthorthree{}     % 3rd member (optional)
 
 \def\dissdegree{Bachelor of Engineering}
 \def\dissdegreeabrev{B.Eng}
-\def\dissyear{202x}
-\def\thaidissyear{256x}
+\def\dissyear{2026}
+\def\thaidissyear{2569}
 
-\def\dissadvisor{Assoc.Prof. My main advisor name , Ph.D.}
-\def\disscoadvisor{Assoc.Prof. My Co-advisor name, Ph.D.}
-\def\disscoadvisortwo{}
-\def\disscoadvisorthree{}
-\def\disscommitteetwo{Asst.Prof. Committee2, Ph.D.}
-\def\disscommitteethree{Asst.Prof. Committee3, Ph.D.}
-\def\disscommitteefour{}
+\def\dissadvisor{Asst.Prof. Rajchawit Sarochawikasit}
+\def\disscoadvisor{}
+% \def\disscoadvisortwo{}
+% \def\disscoadvisorthree{}
+\def\disscommitteetwo{Asst.Prof. Sanan Srakaew}
+\def\disscommitteethree{Asst.Prof. Nuttanart Muansuwan, Ph.D.}
+% \def\disscommitteefour{}
 
 \def\worktype{Project}
-\def\disscredit{3}
+\def\disscredit{9}
 
 \def\fieldofstudy{Computer Engineering}
 \def\department{Computer Engineering}
@@ -56,7 +56,6 @@
 \def\thaidissauthor{นายสมศักดิ์ คอมพิวเตอร์}
 \def\thaidissauthortwo{นางสาวสมศรี คอมพิวเตอร์2}
 \def\thaidissauthorthree{นางสาวสมปอง คอมพิวเตอร์3}
-
 \def\thaidissadvisor{รศ.ดร.ที่ปรึกษา วิทยานิพนธ์}
 \def\thaidisscoadvisor{รศ.ดร.ที่ปรึกษา วิทยานิพนธ์ร่วม}
 \def\thaidisscoadvisortwo{}
@@ -80,7 +79,9 @@
 \def\endproof{\hspace*{\fill}~\QED\par\endtrivlist\unskip}
 
 \begin{document}
-\pdfstringdefDisableCommands{\let\MakeUppercase\relax}
+\pdfstringdefDisableCommands{%
+\let\MakeUppercase\relax
+}
 
 \begin{center}
   \includegraphics[width=2.8cm]{logo02.jpg}
@@ -91,7 +92,7 @@
 \makesignaturepage
 
 \input{chapters/abstract-en}
-\input{chapters/abstract-th}
+% \input{chapters/abstract-th}
 \input{chapters/preface}
 
 \tableofcontents
@@ -118,5 +119,6 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Appendices %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{chapters/appendix-a}
+%\input{chapters/appendix2}
 
 \end{document}
