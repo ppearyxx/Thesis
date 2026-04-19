@@ -1,9 +1,35 @@
 \chapter{METHODOLOGY AND DESIGN}
 
 \section{System Context Diagram}
+\thesisfigure{ch3-system-context-diagram.png}{System Context Diagram}{System       
+  Context Diagram}{}{system-context-diagram}
+The System Context Diagram provides a high-level overview of the Adnexio platform, defining its boundaries and illustrating the primary interactions between the system, its users (actors), and other external systems. It treats the platform as a single entity, focusing on its external relationships rather than its internal technical architecture.
+
 \subsection{External Actors}
+The diagram identifies three main types of external actors who interact with the platform:
+\begin{itemize}
+    \item \textbf{Guest User:} An unregistered visitor who can interact with the platform's public-facing features, primarily the Browsing Domain.
+    \item \textbf{Essential / Elite User:} A registered member who is the primary consumer of the service. They interact with core domains such as User Management, Browsing, and Booking \& Itinerary.
+    \item \textbf{Admin / Concierge:} An internal team member responsible for managing the platform. They interact with the system through the dedicated Admin \& CMS Domain.
+\end{itemize}
 \subsection{External Systems}
+The Adnexio platform relies on several external, third-party systems to provide its full range of functionality:
+\begin{itemize}
+    \item \textbf{Stripe Payments:} An external payment gateway that integrates with the Payments Domain to handle all financial transactions.
+    \item \textbf{Vendor APIs (PlatinumList, SevenRooms):} External partner systems that provide an inventory of third-party experiences. These are connected to the Booking \& Itinerary Domain to facilitate real-time booking.
+    \item \textbf{Resend - Emailing:} A dedicated emailing service that integrates with the Notification \& Communication Domain to send transactional emails and alerts to users.
+    \item \textbf{OpenAI - GPT Suggestions:} The external AI service that provides large language model capabilities to the AI Recommendation Domain for generating personalized suggestions.
+\end{itemize}
+The diagram also introduces our approach to Domain-Driven Design (DDD), which organizes the platform's complex business logic into the following manageable domains and subdomains:
+\begin{itemize}
+    \item \textbf{Booking Management:} This domain is central to the user journey. The Booking Creation subdomain handles the initiation of new reservations, while Itinerary Management structures more complex, multi-part plans. The Notifications subdomain is responsible for all booking-related communications, such as confirmations and reminders.
+    \item \textbf{Payments:} This domain manages all financial transactions. Payment Processing facilitates secure payment collection via Stripe, and the Refunds subdomain manages the return of funds for cancellations or other adjustments.
+    \item \textbf{User Management:} This domain handles all aspects of the user lifecycle. Authentication controls the login and signup flows, and Profile Settings manages user-specific data like preferences, contact information, and membership tier.
+    \item \textbf{AI Features:} This domain powers the platform's intelligence. The Recommendations subdomain generates AI-driven suggestions based on user data, while the Chatbot Interaction subdomain provides the interface for conversational support and planning.
+    \item \textbf{Admin Tools:} This domain provides the necessary tools for the internal team. Content Creation allows staff to create and edit experiences, and the Analytics subdomain offers reporting tools for tracking platform activity and engagement.
+\end{itemize}
 \section{System Architecture Design}
+Test
 \subsection{Medusa's Architecture}
 \subsection{Deployment Pipeline Structure}
 \section{User Roles \& Permissions}

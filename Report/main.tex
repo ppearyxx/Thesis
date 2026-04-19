@@ -74,7 +74,7 @@
   \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{#1}
-    \caption[#2]{#3 \cite{#4}}
+    \caption[#2]{#3\ifx&#4&\else~\cite{#4}\fi}
     \label{fig:#5}
   \end{figure}
 }
