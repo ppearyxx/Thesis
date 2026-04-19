@@ -109,9 +109,21 @@ A key feature of the Apple Developer Account is secure code signing, which ensur
 
 \subsection{Development Tools}
 \subsubsection{Turborepo}
+Turborepo is a high-performance build system specifically designed for managing a monorepo \cite{turborepo2025intro}, which is a version-controlled repository containing multiple distinct projects. Its core function is to optimize build times by leveraging a sophisticated cache system that only executes tasks on code that has changed. This approach prevents redundant computation and enables the parallel execution of dependent tasks across the entire repository. The result is a significant improvement in development velocity, as developers can work on individual projects while ensuring that the entire codebase remains consistent and up-to-date with minimal overhead.
+
 \subsubsection{ESLint \& Prettier}
+ESLint  and Prettier are a complementary pair of tools used to enforce code quality and stylistic consistency. ESLint is a static code analysis tool that programmatically evaluates JavaScript and TypeScript code to identify and report on issues that may compromise code quality, ranging from syntax errors to violations of predefined coding standards \cite{eslint2025gettingstarted}. Prettier, on the other hand, is an opinionated code formatter that automatically restructures source code to a uniform style, eliminating the need for manual formatting and preventing style-related debates within a team \cite{prettier2025docs}. By integrating these tools into the development workflow, the team ensures a standardized, readable, and maintainable codebase.
+
 \subsubsection{Git \& Husky}
+Git is a distributed version control system (VCS) that serves as the foundation for modern collaborative software development. Its primary function is to track and manage changes to source code over time, enabling multiple developers to work on a project simultaneously without compromising code integrity \cite{git2025docs}. The distributed nature of Git ensures that every developer maintains a complete, local copy of the project's history, which facilitates robust, conflict-resilient branching and merging workflows. This architecture is crucial for parallel development and ensures the project's history is resilient.
+To further enforce a structured development process, the project leverages Husky \cite{husky2025docs}, a tool that simplifies the implementation of Git hooks. Git hooks are custom scripts that are triggered automatically at key points in the Git workflow, such as before a `commit` or a `push`. Husky acts as an automated quality gate, ensuring that essential checks such as running linters and tests are performed on every code change. This practice prevents the integration of substandard or non-compliant code into the shared repository, thereby upholding code quality and consistency throughout the entire development lifecycle.
+
+
 \subsubsection{Docker}
+Docker is an open-source containerization platform that enables developers to package applications and their dependencies into lightweight, portable containers \cite{docker2025overview}. Containers ensure environment consistency, allowing applications to run reliably across different systems without conflicts. 
+
+Docker supports efficient resource utilization, rapid deployment, and scalability, making it a core technology in modern DevOps practices and cloud-native development. Its integration with orchestration tools such as Kubernetes further enhances its role in building and managing distributed applications.
+
 \subsection{Related Integrations}
 \subsubsection{SevenRooms}
 \subsubsection{PlatinumList}
