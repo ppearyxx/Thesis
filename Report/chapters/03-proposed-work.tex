@@ -61,6 +61,21 @@ The deployment pipeline is delineated into two automated tracks:
     \item \textbf{The Admin Track} The lower track manages the Admin Repository, which is isolated from client-side dependencies. Updates trigger a deployment to Render, which hosts the backend infrastructure (MedusaJS). Similar to the application track, this workflow enforces a "DB Migration" step against the underlying PostgreSQL database to ensure data integrity prior to updating the live Admin Portal.
 \end{enumerate}
 \section{User Roles \& Permissions}
+\input{tables/user-roles}
+In (Table~\ref{tab:user-roles}) User Roles \& Permissions, Adnexio platform employs a Role-Based Access Control (RBAC) model to manage user permissions and tailor the experience to different user types. The system defines four distinct roles Guest, Essential, Elite, and Administrator each with a specific set of capabilities and access levels designed to serve their unique needs within the platform's ecosystem.
+
+\textbf{Guest User}
+The Guest User role is designed for prospective members exploring the platform. Guests have limited, read-only access, with the ability to browse standard offers and experiences before committing to a sign-up. To perform any transactional actions, such as making a booking, a Guest must register. Upon registration or the first booking, their account is automatically upgraded to the Essential tier.
+
+\textbf{Essential User}
+The Essential User represents the standard, self-service membership tier for everyday users and casual luxury explorers. Following a self-service sign-up, Essential members gain instant access and operate on a pay-per-experience pricing model. They can perform manual bookings for standard venues, typically requiring a two-to-three-day lead time, and receive general support via chat or email. Personalization for this tier is based on basic profile data and stated preferences.
+
+\textbf{Elite User}
+The Elite User is the premium tier for affluent clients seeking a high-touch, fully managed luxury experience. Access to this tier is exclusive, requiring an application or invitation and subsequent approval. The pricing model consists of an annual membership fee in addition to per-experience costs. Elite members are distinguished by access to a dedicated 24/7 lifestyle assistant who can handle bookings and curate experiences on their behalf, securing access to high-demand venues with same-day or short-notice availability. This tier benefits from advanced personalization through a combination of AI and human-curated recommendations and enjoys VIP access, exclusive privileges, and a high degree of experience customization.
+
+\textbf{Administrator}
+The Administrator is an internal, back-office role with comprehensive oversight and control of the entire platform. Administrators have privileged access to all platform functionalities, including both the Essential and Elite user views. Their primary responsibilities include overseeing all in-app payments, processing manual transactions, sending custom notifications to members, and managing the curated catalogue of experiences.
+
 \section{User Registration Flow}
 \subsection{Guest User Flow (Anonymous Access)}
 \subsection{Essential User Flow (Standard Registration)}
