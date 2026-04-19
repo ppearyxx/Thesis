@@ -10,7 +10,42 @@ The repository follows a Turborepo layout with pnpm workspaces, organizing the c
 This structure departs from the stock T3 Turbo reference layout in two deliberate ways. First, there are no Two structural decisions departing from the stock T3 Turbo layout. First, UI components are co-located within each app rather than shared through a ui package, because the mobile app (React Native) and the admin portal (Medusa's component system) do not share a rendering environment. Second, the admin application is excluded from the pnpm workspace and installed independently using npm (recorded as Architecture Decision Record 0002), because MedusaJS's dependency resolution expectations conflict with pnpm's strict workspace semantics.
 
 \subsection{CI/CD Pipeline}
+The CI/CD pipeline is hosted on Bitbucket Pipelines and is structured as two tracks: a pull-request pipeline and a set of branch-and-tag-triggered deployment pipelines.
+
+On every pull request, the pipeline runs \texttt{pnpm install} followed by \texttt{pnpm audit -{}-audit-level=high} to scan for high-severity dependency vulnerabilities. Code quality enforcement (linting, type-checking, and formatting) is handled locally through Husky pre-commit hooks rather than as a CI gate.
+
+Three deployment environments are defined — QA, UAT, and Production — each configured as a Bitbucket Deployment with its own environment variables:
+
+\begin{itemize}
+    \item \textbf{\texttt{main} branch} — auto-deploys the Next.js app to QA via Vercel, auto-applies Supabase migrations to the QA project, and exposes a manual trigger for an Expo EAS build using the \texttt{qa} profile.
+    \item \textbf{\texttt{uat/v*} tags} — force-push the tagged commit to the \texttt{uat} environment branch, apply Supabase migrations to UAT, and expose a manual EAS build trigger using the \texttt{uat} profile.
+    \item \textbf{\texttt{prod/v*} tags} — require a manual confirmation step, then force-push to the \texttt{prod} branch, apply Supabase migrations to Production, and expose a manual EAS build trigger using the \texttt{production} profile.
+\end{itemize}
+
+\textcolor{red}{\textbf{TODO: Change Inline Ref}} \\
+
+Although Chapter 2 (Section 2.1.9.2) introduces Git Flow as a reference branching methodology, the branching model used in practice is trunk-based development with tag-triggered environment promotions. All feature work merges into main through pull requests; main auto-deploys to QA; promotions to UAT and Production are performed by creating annotated Git tags (uat/v* and prod/v*), which the CI pipeline reacts to by force-pushing the tagged commit to the corresponding environment branch. The uat and prod branches therefore function as environment markers rather than merge targets, and are protected through Bitbucket branch restrictions that permit write access only to a dedicated deployment bot user.
+\thesisfigure{ch4-ci-cd-pipeline.png}{Bitbucket Pipelines Dashboard}{Bitbucket     
+  Pipelines Dashboard Showing a Mix of PR Audit Runs and Tag-Triggered Deployments to
+   QA/UAT/Production}{}{ci-cd-pipeline}
+
+
 \subsection{Environment Isolation}
+
+Three entirely separate Supabase projects — \texttt{[project]-qa}, \texttt{[project]-uat}, and \texttt{[project]-prod} — are provisioned, each with its own URL, anonymous key, service-role secret, and Postgres connection string. This guarantees that no environment can accidentally access data belonging to another.
+
+Secrets and configuration values are managed across three layers:
+
+\begin{itemize}
+    \item \textbf{Vercel environment variables} per environment slot, for the Next.js applications.
+    \item \textbf{Bitbucket repository and deployment variables}, for CI-side credentials.
+    \item \textbf{EAS environment variables} per build profile, defined in \texttt{apps/expo/eas.json}.
+\end{itemize}
+
+Local development uses gitignored \texttt{.env} files copied from checked-in \texttt{.env.example} templates. No dedicated secret management service is used; the combination of these three layers covers the full surface of runtime secrets without an additional dependency.
+
+Docker is used only as a local development dependency for running the Supabase stack (Postgres, Kong, Auth, Storage, Studio, Inbucket) via the Supabase CLI. The application services themselves are not containerized — no \texttt{Dockerfile} or \texttt{docker-compose.yml} exists at the application level. Deployment is handled by Vercel (Next.js apps), Render (MedusaJS), and EAS (mobile app).
+
 \section{Core Module Implementation}
 \subsection{Authentication and Authorization}
 \subsection{User Onboarding and Personalization}
