@@ -161,10 +161,37 @@ By providing detailed telemetry on latency, token usage, and execution traces, t
 GPT-4o \cite{openai2025models} was selected for its exceptional speed and multimodality, which allows it to process and generate various forms of content, including text and rich, dynamic responses. GPT-4o's advanced reasoning and conversational abilities are integral to delivering a responsive and intelligent user experience. This makes it an ideal choice for a hybrid advisory model, as it can efficiently blend automated intelligence with human expertise to generate personalized itineraries and provide intelligent conversational support to users.
 \subsection{Development Methodology}
 \subsubsection{Continuous Integration and Continuous Deployment (CI/CD)}
+Continuous Integration (CI) and Continuous Deployment (CD) \cite{redhat2023cicd} is a software development methodology that aims to automate and accelerate the software development lifecycle. It represents a shift from traditional, manual processes to a more agile and efficient workflow, supported by DevOps or Site Reliability Engineering (SRE) principles. As modern applications grow in complexity, the practices of CI/CD help to streamline workflows, increase efficiency, and decrease complexity. By automating the manual human intervention traditionally required for code releases, CI/CD minimizes downtime and accelerates the delivery of new code to production.
+The CI in CI/CD refers to Continuous Integration, an automated process that facilitates the frequent merging of code changes from multiple developers into a single shared repository. This addresses the problem of code conflicts that can arise when developers work in isolation and merge their work on a single "merge day".
+
+The CD in CI/CD encompasses two related concepts: Continuous Delivery and Continuous Deployment. Both are focused on automating the later stages of the development pipeline. Continuous Delivery automates the process of releasing validated code to a repository, where it can then be manually deployed to production by an operations team. The goal is to ensure the codebase is always in a deployable state.
+
 \subsubsection{Git Flow}
+Git Flow \cite{atlassian2025gitflow}  is a structured branching model for managing source code with Git. Unlike more flexible approaches, this methodology defines a strict and prescriptive workflow by utilizing a set of dedicated, long-lived branches for different phases of development. This includes the main branch for stable, production-ready code and the develop branch, which serves as the primary integration point for all new features. 
+
+Additionally, it uses a series of temporary branches for specific, well-defined tasks, such as feature branches for developing new functionality, release branches for preparing a new production version, and hotfix branches for addressing critical bugs in the main branch. This prescriptive, multi-branch process provides a highly organized and predictable workflow, which is particularly beneficial for larger teams and projects that require a high degree of control and a clear separation between development and deployment environments.
+
 \subsubsection{Kanban}
+Kanban \cite{planview2025kanban} is a project management methodology that provides a visual framework for organizing and managing work. It is rooted in a pull-based system where work is initiated only as capacity becomes available, ensuring a continuous and smooth workflow. The fundamental purpose of Kanban is to enhance efficiency by optimizing the flow of work and mitigating bottlenecks. This is achieved by making the workflow transparent, limiting the amount of work in progress, and continuously managing the flow of tasks through a series of defined stages. The methodology does not prescribe specific roles or time-boxed iterations, which provides a high degree of flexibility. An example of a Kanban board illustrating this workflow can be seen in (Figure~\ref{fig:kanban-board}).
+
+\thesisfigure{ch2-kanban.png}{Example of Kanban Board}{Example of Kanban Board}{geeksforgeeks2025kanban}{kanban-board}
+\textbf{Core Principles of Kanban}
+
+The methodology is guided by four key principles designed to foster a culture of continuous, evolutionary improvement:
+\begin{itemize}
+  \item \textbf{Start with the existing process:} Kanban begins by implementing its practices on top of a team's current workflow without requiring an immediate, disruptive overhaul.
+  \item \textbf{Agree to pursue incremental change:} It promotes small, continuous improvements rather than rapid, substantial changes. This approach minimizes resistance and encourages a gradual, evolutionary transition.
+  \item \textbf{Respect existing roles and titles:} Kanban respects a team's current structure and job titles, which helps build confidence and encourages adoption of the new method without creating a sense of organizational instability.
+  \item \textbf{Encourage leadership at all levels:} Leadership is not confined to a single role but is encouraged from everyone within the organization. This empowers team members to contribute to the process of continuous improvement.
+\end{itemize}
+
 \subsection{Miscellaneous}
+This section covers important project-level considerations and concepts that are crucial for development and design.
+
 \subsubsection{GDPR Compliance}
+The General Data Protection Regulation (GDPR) \cite{gdpr2025whatisit} is a comprehensive legal framework established by the European Union to govern data privacy and security. The regulation sets strict guidelines for the collection, processing, and management of personal data from individuals within the EU. It imposes obligations on organizations worldwide that handle such data.
+Adherence to GDPR principles is a critical requirement for any system that interacts with EU citizens. These principles include establishing transparent consent mechanisms, practicing data minimization, and upholding the right of individuals to be forgotten. Compliance is essential not only for legal and ethical reasons but also for building user trust by demonstrating a strong commitment to protecting personal information.
+
 \section{Market Research}
 \subsection{Quintessentially}
 \subsection{Velocity Black}
