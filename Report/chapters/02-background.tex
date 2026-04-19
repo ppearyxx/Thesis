@@ -72,3 +72,10 @@ React Native is an open-source framework that allows developers to build mobile 
 
 \subsubsection{Expo}
 Expo is a development framework built on top of React Native that simplifies mobile application development. It provides a managed workflow with pre-configured tools, over-the-air (OTA) updates, and access to a wide range of native APIs, which enables developers to rapidly prototype and deploy applications. Expo’s approach lowers the barrier to entry for mobile development by abstracting away complex native setup processes, allowing teams to focus on the application logic. The framework is particularly valuable for accelerating the delivery of Minimum Viable Products (MVPs) and streamlining app lifecycle management, despite potential limitations in its managed environment for applications requiring advanced native modules. \cite{expo2024coreconcepts}
+
+\subsubsection{tRPC}
+tRPC is a framework designed for building fully type-safe APIs in TypeScript applications\cite{trpc2025quickstart}. Its core innovation lies in its ability to eliminate the need for traditional API schema definitions, such as those used in REST or GraphQL, by sharing type definitions directly between the client and the server. This architectural approach ensures end-to-end type safety, which effectively mitigates common runtime errors associated with data contract mismatches and streamlines the maintenance of both frontend and backend systems. By providing developers with real-time autocompletion and compile-time error checking, tRPC significantly enhances the developer experience and accelerates the development cycle. This provides a lightweight and strongly typed communication layer that exemplifies a growing trend in modern full-stack development, prioritizing efficiency, developer experience, and system reliability. For a visual representation of the tRPC architecture, please refer to the (Figure~\ref{fig:trpc-arch-overview}) below.
+
+\thesisfigure{ch2-tRPC.png}{ tRPC Architecture Overview
+}{ tRPC Architecture Overview
+}{ignatovich2025trpc}{trpc-arch-overview}
