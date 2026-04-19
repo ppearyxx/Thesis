@@ -13,6 +13,7 @@
 \usepackage{multirow}
 \usepackage{adjustbox}
 \usepackage{float}
+\usepackage{caption}
 \usepackage{polyglossia}
 \setdefaultlanguage{english}
 \setotherlanguage{thai}
@@ -75,6 +76,7 @@
   \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{#1}
+    \captionsetup{justification=centering}
     \caption[#2]{#3\ifx&#4&\else~\cite{#4}\fi}
     \label{fig:#5}
   \end{figure}
@@ -84,6 +86,7 @@
 \definecolor{phasebg}{RGB}{210,178,200}
 
 \linespread{1.15}
+% \setlength{\parskip}{0.5em}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % End of personal customization

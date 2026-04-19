@@ -99,8 +99,22 @@ Onboarding responses are persisted to a single \texttt{onboarding\_stage} table 
 Onboarding completion is tracked through a dual-signal mechanism. When the user submits the final step, the \texttt{completeOnboarding} mutation sets \texttt{onboarding\_completed\_at} on the user's profile record and writes \texttt{completed\_at} on the \texttt{onboarding\_stage} row. The user's resolved state then evaluates to \texttt{ONBOARDED}, which routes subsequent sessions directly to the main application rather than back into the onboarding flow. Every step of the onboarding flow renders a progress bar showing the user's position within the three-step sequence (e.g., ``Step 2 of 3''), providing a clear sense of progression and remaining effort. Figure~\ref{fig:data-storage-and-completion} shows a representative \texttt{onboarding\_stage} row for an onboarded user.
 \thesisfigure{ch4-data-storage-and-completion.png}{Stored Onboarding Data in Supabase}{Stored Onboarding Data in Supabase}{}{data-storage-and-completion}
 \subsection{Payment System}
+\textcolor{red}{\textbf{TODO: Change Inline Ref}} \\
+The payment module realizes the architecture documented in Section 3.7, using Stripe as the payment provider and MedusaJS as the commerce backend for order placement. This subsection documents the implemented state of the module across three concerns: one-time experience purchases, Elite subscription billing, and the Elite approval workflow along with an honest inventory of gaps between the original design and the current implementation.
+
 \subsubsection{One-Time Experience Purchases}
+One-time purchases support the checkout flow for users booking individual experiences. The implementation spans the mobile client, the tRPC payment router, the Medusa commerce backend, and Stripe's PaymentSheet SDK.
+
+\textcolor{red}{\textbf{TODO: Change Inline Ref ---> 4.10}} \\
+
+The flow begins when a user proceeds from the cart to checkout. The \texttt{useCheckoutFlow} hook on the mobile client splits cart items into internal experiences (charged via Stripe) and external or free items (handled separately), then creates a Medusa payment collection and session representing the transaction. The hook then invokes the mobile Stripe SDK's \texttt{initPaymentSheet} followed by \texttt{presentPaymentSheet}, which renders the native Stripe payment UI for card collection. On successful payment, the client calls a \texttt{completeOrder} endpoint that in turn calls Medusa's \texttt{/store/carts/\{cartId\}/complete} to place the order. Figure 4.10 shows the PaymentSheet as rendered on iOS and Android, and Figure~\ref{fig:one-time-experience-purchases} shows the resulting order confirmation screen.
+\thesisfigure{ch4-one-time-experience-purchases.png}{Stripe PaymentSheet on iOS During One-Time Experience Checkout}{Stripe PaymentSheet Rendered on iOS During One-Time Experience Checkout}{}{one-time-experience-purchases}
+
 \subsubsection{Elite Subscription Billing}
+The Elite tier requires recurring subscription billing, which is implemented through a Stripe Pricing Table in conjunction with the tRPC payment router. The mobile client renders a plan selection screen that offers both monthly and annual billing intervals, each backed by a distinct Stripe price. The chosen price identifier is passed through to the subscription creation path on the backend.
+
+The payment router implements six procedures to support the subscription surface: \texttt{getUserSubscription} and \texttt{getSubscription} for reading current state, \texttt{createCustomerSession} for initiating the Stripe Pricing Table flow, \texttt{getEliteSubscriptionPrice} for resolving the correct price identifier, \texttt{cancelSubscription} for ending an active subscription, and \texttt{createPaymentIntent} for the one-time flow described above. A subscription record is persisted to the Supabase payments table with \texttt{type = "subscription"}, capturing the Stripe customer identifier, the Stripe subscription identifier, the billing interval, and the mirrored Stripe subscription status.
+
 \section{Product Inventory Implementation}
 \subsection{Internal Experience Management}
 \subsubsection{Authoring Surface}
