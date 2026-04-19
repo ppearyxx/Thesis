@@ -28,6 +28,14 @@ The primary advantage of monolithic architecture lies in its simplicity. It is s
   \label{fig:modular-monolithic-architecture}
 \end{figure}
 
+\subsubsection{Domain Driven Design (DDD)}
+
+Domain-Driven Design (DDD) is a software engineering methodology that integrates software architecture with the business domain to address the complexity of large-scale systems. Its primary objective is to ensure that software models accurately represent business processes, thereby shifting development from a technology-oriented to a domain-oriented perspective. \cite{ozkan2025ddd}
+
+Two foundational concepts define DDD: Ubiquitous Language and Bounded Contexts. Ubiquitous Language is a collaboratively developed vocabulary shared between developers and domain experts. By embedding this language directly into communication and source code, DDD eliminates ambiguity and strengthens the alignment between the software model and the business domain. Bounded Contexts, in contrast, establish explicit boundaries around sub-domains, each maintaining its own model and terminology. This separation reduces complexity, prevents inconsistencies, and allows development teams to focus on smaller, coherent parts of the system.
+
+Beyond conceptual clarity, DDD offers practical architectural benefits. The separation provided by Bounded Contexts naturally aligns with modern distributed paradigms such as microservices, where autonomous and loosely coupled services are essential. This approach enables systems to evolve alongside changing business requirements while maintaining technical robustness and strategic alignment with organizational goals. \cite{ozkan2025ddd}
+
 \section{Algorithms}
 
 \subsection{Algorithm I}
