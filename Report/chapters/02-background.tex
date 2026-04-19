@@ -36,6 +36,18 @@ Two foundational concepts define DDD: Ubiquitous Language and Bounded Contexts. 
 
 Beyond conceptual clarity, DDD offers practical architectural benefits. The separation provided by Bounded Contexts naturally aligns with modern distributed paradigms such as microservices, where autonomous and loosely coupled services are essential. This approach enables systems to evolve alongside changing business requirements while maintaining technical robustness and strategic alignment with organizational goals. \cite{ozkan2025ddd}
 
+\subsubsection{System Context Diagram}
+
+The System Context Diagram is rooted in Structured Analysis and Design Technique (SADT). This methodology, developed in the 1970s, aimed to create a more disciplined approach to software development. The SCD is an integral part of Data Flow Diagrams (DFDs), where it serves as the top-level, or Level 0, diagram. \cite{paloalto2025dfd}
+
+The theoretical underpinning is that by defining the system's boundaries and external interfaces first, developers can avoid getting bogged down in internal details too early. This aligns with the principle of separation of concerns, which advocates for breaking down a complex problem into smaller, more manageable parts. By isolating the system from its environment, the SCD allows for a clear focus on the system's external behavior before delving into its internal structure. This top-down approach ensures that the system being developed is relevant and responsive to the needs of its users and the environment it operates in.
+
+\subsubsection{Codebase Structure}
+
+A monorepo \cite{fernandez2024monorepo} is a single, unified version-controlled repository that houses a collection of logically distinct projects. This architectural paradigm contrasts with the traditional multirepo approach, where each project resides in its own separate repository. The primary advantage of a monorepo is the simplification of dependency management and a streamlined approach to code sharing across different applications, such as a web frontend and its corresponding API.
+
+To address the performance challenges inherent in a large monorepo, namely slow build and testing times, the build system Turborepo \cite{turborepo2025intro} is employed. Turborepo operates on two key principles: content-addressable caching and parallel task execution. Content-addressable caching ensures that if the input to a build task has not changed, the build output can be instantly retrieved from a cache, eliminating redundant computation. Parallel task execution, in turn, leverages the inherent dependencies between projects to run independent tasks concurrently, maximizing the utilization of computational resources.
+
 \section{Algorithms}
 
 \subsection{Algorithm I}
