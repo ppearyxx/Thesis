@@ -171,6 +171,7 @@ Regardless of residency status, all users must define their core interests, diet
 \section{Payment System Architecture}
 The Adnexio platform's commerce functionality is supported by the Stripe payment processing platform, which handles two distinct transaction models requiring one time purchase and tiers subscriptions. This robust architecture ensures security, scalability, and accurate financial record-keeping by integrating the Next.js Server with Stripe's APIs and Webhooks.
 \subsection{Non-Subscription Payment Flow}
+\label{subsection:Non-Subscription Payment Flow}
 The non-subscription flow is used for one-time payments, such as booking a single experience or purchasing goods through the platform, primarily supporting the \textbf{Essential} user base. This flow is synchronous, with the transaction status immediately confirmed by the mobile application
 
 \textcolor{red}{\textbf{TODO: ADD IMAGE}}
@@ -210,23 +211,153 @@ The Elite tier subscription flow is mandated for the collection of recurring rev
 \end{enumerate}
 
 \section{Integrate external experience to system}
+\label{section:Integrate external experience to system}
+Since the platform integrates with the Platinumlist API, which serves as a primary source to Adnexio by enriching the application's experience inventory with high-quality, local events and activities. This section details the process of how we ingest, process, and map this data to our mobile client.
 \subsection{Matching Data using from API with Application side}
+To ensure optimal performance on the mobile application, the system implements a strict data processing pipeline. The raw data received from the external API often contains extensive administrative metadata that is irrelevant to the user-facing mobile client. Therefore, this pipeline filters and optimizes the data, ensuring that only essential fields such as visual assets, geospatial coordinates, and core pricing information are transmitted to the user's device. This optimization minimizes latency and reduces bandwidth consumption.
+
+\thesisfigure{ch3-matching-data-using-from-API-with-application-side-1.png}{Data   
+  Binding and UI Mapping}{Data Binding and UI Mapping}{}{matching-data-api-1}
+
+Beyond the static descriptive fields detailed in Figure~\ref{fig:matching-data-api-1}, the integration must also handle dynamic inventory data. The Platinumlist API provides a secondary \texttt{event\_shows} dataset, which is critical for the application's booking engine. The mobile client parses this array to determine valid start times and visualizes seat availability directly on the calendar interface.
+\thesisfigure{ch3-matching-data-using-from-API-with-application-side-2.png}{Booking Interface and Ticket Selection}{Booking Interface and Ticket Selection}{}{matching-data-api-2}
+While the experience details page relies on static content, the booking interface requires real-time synchronization with the backend inventory system. Figure~\ref{fig:matching-data-api-2}, illustrates the schema binding for the reservation workflow.
+
+Temporal Binding: The application parses the start timestamp from the availability payload to populate the native Date and Time Pickers. The system strictly enforces the \texttt{is\_sold\_out} flag; if this boolean is true, the corresponding date slots are visually disabled in the UI to prevent invalid selection.
+
+Dynamic Pricing \& Categories: Unlike hard-coded forms, the "Guest Details" section is generated dynamically. The application iterates through the tickets array to render the specific categories (e.g., "Adults", "Children") defined by the vendor.
+
+
 \section{Product Inventory}
+Following the integration of the external PlatinumList API described in Section~\ref{section:Integrate external experience to system}, the system requires a unified layer to ingest, organize, and expose all experience data both external and internal to end users. This section describes the design and architecture of the product inventory system, category management, itinerary creation workflows.
+
 \subsection{Unified Product Inventory Architecture}
+The Adnexio platform adopts a dual-stream inventory model to achieve total visibility over all service offerings. The inventory is divided into \textbf{two primary categories:} \\
+\begin{enumerate}
+    \item \textbf{External Experiences:} Events and activities sourced from the PlatinumList API. These are ingested, transformed, and seeded into the platform's PostgreSQL database through a dedicated data standardization pipeline, as described in Section~\ref{section:Integrate external experience to system}.
+    \item \textbf{Internal Experiences:} First-party experiences created and managed directly by the Adnexio administrative team through the Medusa Admin Portal, including activities such as car rentals and per-event bookings.
+\end{enumerate}
+Both categories are normalized into a unified product schema within the MedusaJS backend, allowing the mobile application to consume them through a consistent API interface regardless of origin.
+
 \subsection{Category Configuration}
+Product categories are structured hierarchically and are configurable by administrators through the Categories section of the admin portal. Each category is assigned a unique handle (e.g., \texttt{/entertainment-\&-shows}, \texttt{/family-fun}), an active and public status flag, and an associated category image (uploaded as JPEG, JPG, or PNG). \\
+The category image is rendered on the mobile application's Explore screen as a visual tile, enabling users to browse by thematic area. \\
+The defined top-level categories include, but are not limited to: Attraction, Explore, Entertainment, Icons, Family Fun, Thrills, Playgrounds, Culture \& Art, and Discover. Sub-categories may be nested beneath these top-level entries to provide additional classification granularity.
+
 \subsection{Tag Configuration}
+Product tags are managed under the Settings > Product Tags section of the admin portal. Tags serve as a lightweight, non-hierarchical labeling mechanism that complements categories. Tags such as attraction, experiences, luxury, nature, and family are assigned to individual products and are used by the AI itinerary builder as filtering criteria when selecting relevant experiences for a generated plan.
+
 \section{Itinerary System Design}
+The Adnexio platform supports two distinct itinerary creation modalities, designed to serve different user segments and administrative needs.
+
 \subsection{Itinerary Types}
+\begin{enumerate}
+    \item \textbf{Pre-Made Itineraries (Admin-Created):} Curated itinerary bundles created and published by the Adnexio administrative team. These are available to both Essential and Elite users and are discoverable through the Itinerary tab of the mobile application. Each pre-made itinerary is a structured, multi-day plan that groups a set of experiences into a single purchasable bundle.
+    \item \textbf{AI Itinerary Builder (Elite User-Created):} A personalized, conversational itinerary generation feature exclusive to Elite-tier users, powered by GPT-4o. Users interact with an in-app assistant named "George" to generate a bespoke itinerary based on their travel preferences, dates, and interests.
+\end{enumerate}
+
 \subsection{Pre-Made Itinerary Design}
+Administrators create pre-made itineraries through the Itineraries extension in the Medusa Admin Portal. The creation workflow consists of the following components:
+\begin{enumerate}
+    \item \textbf{Basic Information:} The itinerary title, a cover image, a timeframe (number of days), a short subtitle description, and assigned categories and tags.
+    \item \textbf{Itinerary Days \& Experiences:} A day-by-day slot builder in which administrators assign specific experience products to each day. Each slot specifies the experience product ID, the slot type (Internal Product or External/Optional), and a variant reference at checkout. Administrators may designate specific slots as optional, allowing users to customize the itinerary at the point of booking.
+\end{enumerate}
+Completed itineraries may be saved as a Draft or published immediately. Upon publication, the itinerary becomes visible in the mobile application's pre-made itinerary discovery section, where users may add the entire bundle to their cart in a single action.
+
 \subsection{AI Itinerary Builder Design}
+\label{subsection: AI Itinerary Builder Design}
+The AI Itinerary Builder implements a structured session-based workflow to generate personalized day-by-day plans for Elite users. The builder reuses the same itinerary slot endpoints defined for pre-made itineraries and invokes them programmatically as tools called by the GPT-4o model via the Vercel AI SDK. \\
+\textbf{Session Flow} \\
+The builder follows a \textbf{four-stage session lifecycle:}
+\begin{enumerate}
+    \item \textbf{Session Start:} The session is initiated when the user opens the AI builder interface.
+    \item \textbf{User Onboarding Status Check:} The system retrieves the user's onboarding profile from the database, extracting stored preferences including travel dates, user interests, and preferred pace. If the onboarding data is incomplete, the assistant prompts the user to provide the missing information.
+    \item \textbf{Confirm \& Update Travel Dates and Preferred Pace:} The assistant confirms the user's intended travel dates through a structured validation step. Dates are classified into one of four states: past dates (rejected), present dates (accepted with a warning), valid future dates (accepted), or ambiguous dates (clarified through follow-up). The user also selects or confirms their preferred itinerary pace, which directly controls the number of activities scheduled per day:
+    \begin{itemize}
+        \item \textbf{Relaxed:} 3 activities per day
+        \item \textbf{Balanced:} 4 activities per day
+        \item \textbf{Packed:} 5 activities per day
+    \end{itemize}
+    \item \textbf{Itinerary Creation / Update:} The model generates a complete itinerary by querying available products filtered by the user's travel dates, selected interests, and pace. The AI selects appropriate experiences from the inventory, assigns them to time slots across each day of the trip, and returns the structured plan to the user through the chat interface. The generated itinerary is displayed as a day-by-day card list, with each slot showing the experience name, location, time range, and price in AED. Users may then add the complete AI-generated itinerary to their cart through a single ``add this itinerary to cart'' action, which invokes the same checkout flow as pre-made itineraries.
+\end{enumerate}
+
 \section{Discovery and Browsing Design}
+The Discovery and Browsing module serves as the primary entry point through which users explore and locate available experiences within the Adnexio platform. It is implemented as the Explore tab, the default landing screen presented to all users upon opening the application. The interface is designed to support both directed search, where users seek a specific experience by name, and undirected discovery, where users browse by category or interest tag.
+
 \subsection{Explore Tab Structure}
+The Explore tab serves as the default landing screen of the mobile application and functions as the primary entry point through which users locate experiences within the platform. Its design is guided by a core principle: the interface must accommodate two distinct modes of user intent without forcing the user to commit to either upfront. Users who arrive with a specific experience in mind require a \textbf{directed search } mechanism, while users who arrive without a predefined goal require an \textbf{undirected discovery} surface that invites exploration by theme or interest. Rather than separating these modes into distinct screens, the Explore tab consolidates both into a single scrollable feed, allowing users to transition fluidly between targeted lookup and open-ended browsing within the same context.
+\\
+To support this dual-mode design, the Explore tab is composed of three vertically stacked sections arranged in descending order of interaction specificity:
+\begin{enumerate}
+    \item \textbf{Tag Filter Chips Row:} A horizontally scrollable row of filter chips rendered directly below the search bar. This section supports lightweight, reversible narrowing of the product feed. Tag chips are designed to be applied and dismissed with minimal friction, enabling users to progressively refine the catalog view without committing to a full category navigation.
+    \item \textbf{Itinerary Entry Point Tiles:} Two fixed tiles serving as direct shortcuts into the platform's itinerary features: the AI Itinerary Builder and the Pre-Made Itinerary catalog. These tiles are intentionally positioned above the category grid to surface itinerary creation as a first-class pathway, rather than a feature buried within deeper navigation. This placement reflects the design intent that personalized itineraries are a headline capability of the platform, not a secondary concern.
+    \item \textbf{Category Grid:} A grid of visually prominent category tiles positioned at the bottom of the feed. Each tile represents a broad thematic area of the catalog and is rendered with an administrator-configured cover image to support visual, image-led navigation. Tapping a tile transitions the user into a filtered product listing scoped to that category.
+\end{enumerate}
+
 \subsection{Tag-Based Filtering}
+Tag-based filtering is designed as a secondary refinement layer over the default Explore feed, allowing users to narrow the catalog to a specific interest without committing to a full category navigation. Its behavior is governed by three design decisions.
+
+First, the system enforces a single-active-tag model. Selecting a new chip automatically deactivates any previously active tag. This prioritizes predictability over expressive power: users always know which single criterion is shaping their view, and the model for switching or clearing filters remains consistent.
+
+Second, filtered results are ranked by descending tag-match count. Because products may carry multiple tags, those sharing more tags with the user's active filter are treated as more contextually relevant and surfaced first. A user filtering by "wellness" should first encounter experiences that are most emphatically wellness-oriented, not experiences that merely happen to carry the tag.
+
+Third, the chip row includes "all" as an explicit reset state, treating the unfiltered view as a first-class filter value rather than the absence of filtering. This keeps the interaction pattern consistent across all chip selections.
+
 \subsection{Server-Side Search}
+The search bar is designed as a server-side operation rather than a client-side filter over cached data. Dispatching each query to the backend ensures results always reflect the live product catalog, including newly added experiences and freshly synced external inventory (Section~\ref{section:Integrate external experience to system}). This aligns with the platform's broader principle that the mobile application remains a thin presentation layer over an authoritative backend.
+To balance responsiveness against network cost, the search is governed by a two-tier debounce design:
+\begin{enumerate}
+    \item \textbf{Suggestion tier:} A short debounce window returns a lightweight list of matching experience names for inline suggestions below the search bar, providing fast feedback as the user types.
+    \item \textbf{Full search tier:} A separate debounce window returns the complete matching product set for rendering in the results grid, engaged only after the user's input reaches a minimum character threshold.
+\end{enumerate}
+The minimum-character threshold is itself a design safeguard: short queries produce overly broad result sets that are neither useful to the user nor efficient to compute. The two tiers separate the concerns of guiding input from returning results, yielding a search experience that feels responsive while remaining economical.
+
 \subsection{Default Product Ordering}
+In the absence of a filter or search query, the Explore tab renders products in the catalog's default order. A deliberate decision was made to not apply client-side personalization to this default feed ordering that is not influenced by the user's onboarding preferences or behavioral history.
+
+This reflects a separation between two modes of product surfacing. The Explore tab is a neutral, catalog-wide browsing surface whose ordering should be driven by administrative curation, not user-specific signals. Personalization here would introduce opacity: users would not know why certain experiences surfaced, and two users would see different views of the same catalog without a clear mental model for the divergence.
+
+Personalization is instead concentrated in the AI Itinerary Builder (Sectio~\ref{subsection: AI Itinerary Builder Design}), where the user has explicitly invited the system to tailor output and retains visibility into the reasoning through the conversational interface. This preserves a clear distinction between browsing the catalog and receiving curated recommendations.
+
+Each product card renders a consistent set of fields cover image, category tag label, truncated title, and starting price chosen to support rapid visual scanning while encouraging users to tap through for full detail rather than compressing a complete decision surface into each card.
 \section{Booking Flow}
+The booking flow defines the end-to-end journey a user takes from identifying an experience to receiving confirmation of a completed transaction. It is designed as a linear, five-stage sequence in which each stage resolves a specific decision before advancing the user to the next, supplemented by a post-transaction management surface for reviewing and acting on completed bookings.
+
 \subsection{Booking Stages}
+There are five stages. Those are designed to progressively narrow the user's commitment: from evaluating an experience, to configuring its specifics, to reviewing and paying for it, to receiving assurance that the booking is secured. The stage are including
+\begin{enumerate}
+    \item \textbf{Detail.} The first stage presents all information required for the user to make a booking decision in a single consolidated view: imagery, title, starting price, location, duration, capacity, restrictions, transport arrangements, and description. A key design rule at this stage is that acceptance of terms and conditions gates the primary action button. Where an experience carries mandatory terms, the user cannot advance until those terms are explicitly acknowledged, ensuring legal and operational requirements are satisfied before any configuration begins. The primary action button itself adapts its label to reflect the current state for example, indicating pending terms acceptance or unavailability for booking so that the user receives immediate feedback on why progression may be blocked.
+
+    \item \textbf{Configuration.} The second stage adapts dynamically to the experience's pricing model, with three distinct configurations:
+    \begin{itemize}
+        \item \textbf{Open-Dates:} A date picker paired with a simple ticket quantity selector. No time slot is required because the experience permits flexible entry within the selected date.
+        \item \textbf{Show-Time:} A date picker followed by a time slot selector, then per-category ticket quantity inputs. This configuration applies to experiences where each session has a fixed start and end time.
+        \item \textbf{Rental:} A start date and end date picker, with the applicable pricing tier auto-calculated from the selected duration. A design rule governs the tier assignment: durations under one week apply the daily rate, durations between one week and one month apply the weekly rate, and durations of a month or longer apply the monthly rate.
+    \end{itemize}
+    This adaptive design ensures that the configuration interface exposes only the inputs relevant to the experience type, avoiding the confusion of irrelevant fields.
+
+    \item \textbf{Cart.} The third stage introduces a persistent, multi-item cart that retains previously added experiences across the session. Users may book multiple experiences in a single transaction rather than being forced into one-at-a-time checkouts. A reservation timer is surfaced prominently, communicating the time window during which the cart's held inventory remains reserved. This design acknowledges that bookings against live inventory cannot be held indefinitely without degrading availability for other users.
+
+    \item \textbf{Checkout.} The fourth stage is designed as an intermediate review step between the cart and the payment interface rather than an immediate transition into payment collection. It contains a consolidated summary of cart items, a security disclosure informing the user that card details are not stored on the platform, an option to return to browsing before committing, and a trust indicator confirming Stripe as the payment processor. A design rule at this stage is that free items bypass the payment interface entirely when a cart's total resolves to zero, the order is created directly without invoking the payment flow. The full payment architecture invoked from this stage is described in Section~\ref{subsection:Non-Subscription Payment Flow}.
+
+    \item \textbf{Confirmation.} The final stage communicates the outcome of the transaction. On success, the user is presented with a confirmation screen displaying the booking summary, a notice that a confirmation email has been dispatched, and navigation actions to either continue browsing or review the new booking. On failure, the error is surfaced inline within the payment interface itself rather than through a separate failure screen, allowing the user to correct their input and reattempt payment without losing context or navigating away.
+\end{enumerate}
+
 \subsection{My Bookings}
+Following a completed booking, users require a dedicated surface for reviewing, tracking, and managing their reservations over time. The My Bookings tab is designed as an authenticated-only surface, with non-logged-in users redirected on access attempts, reflecting that the contents are inherently personal and tied to an authenticated identity.
+
+Bookings are organized into three tabs that reflect the lifecycle states most relevant to the user:
+\begin{itemize}
+    \item \textbf{Upcoming} Bookings that are confirmed and whose scheduled date lies in the future. These are the bookings the user needs to prepare for and act on.
+    \item \textbf{Past:} Bookings whose scheduled date has already elapsed, providing a historical record of completed experiences.
+    \item \textbf{Awaiting Confirmation:} Bookings in a pending state, where payment or administrative confirmation has not yet been resolved. These are isolated from the upcoming tab to prevent users from mistaking an unconfirmed reservation for a secured one.
+\end{itemize}
+A key design decision is that \textbf{status is derived client-side} from the booking's underlying data rather than being stored as an explicit classification. A booking whose end date has passed is treated as past regardless of its order state; an order marked pending is treated as awaiting; an order marked completed with a future end date is treated as upcoming. This derivation keeps the tab taxonomy simple and avoids the need for continuous backend status updates as dates naturally elapse.
+
+Each booking card surfaces a consistent set of fields: experience title, location, date, booking number, guest count, status badge, optional linked itinerary name where the booking is part of a bundled plan, and a pending cancellation flag where the user has submitted a cancellation request that has not yet been processed. Bookings are sorted in \textbf{ascending order by start date}, prioritizing the most imminent reservations at the top of the list.
+
+The separation of upcoming, past, and awaiting states, combined with derived rather than stored status, yields a booking management surface that stays accurate over time without requiring explicit lifecycle events to transition bookings between views.
+
 \section{Internal Tools Design}
 \subsection{Customer Management}
 \subsection{Order Management}
