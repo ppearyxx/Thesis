@@ -109,12 +109,31 @@ Elite status represents a premium tier requiring application-based approval and 
     \item Role Elevation: Upon successful payment confirmation via Stripe webhook, the user's role assignment in the Supabase database is automatically elevated to Elite status. This promotion grants immediate access to premium features including VIP experiences, priority booking privileges, and dedicated concierge services.
 \end{enumerate}
 
-\subsection{Guest User Flow (Anonymous Access)}
-\subsection{Essential User Flow (Standard Registration)}
-\subsection{Elite User Upgrade Flow (Invitation and Payment)}
 \section{User Authentication and Authorization}
 \subsection{Authentication flow}
+The authentication process for the Adnexio platform is handled by \textbf{Supabase Auth}, which manages user sessions, password hashing, and token issuance. This streamlines development by leveraging a managed, secure, and scalable authentication service. \\
+JWT Implementation: The system is built on a JSON Web Token (JWT) architecture. Upon successful sign-in, Supabase issues a unique JWT that is sent to the client. This token contains encrypted user claims, including the user's role (Guest, Essential, or Elite) and a unique user ID (auth.uid).
+\begin{enumerate}
+    \item Session Validation Chain: The Next.js API Host validates this JWT for every incoming API request. The validation process ensures that the request is authentic, confirms the user's identity, and extracts the necessary role and auth.uid claims. This serves as the first security gate.
+    \item Role-Based Access Control (RBAC): The role embedded in the JWT is the core mechanism for Role-Based Access Control (RBAC). This control is enforced at two crucial layers:
+    \begin{enumerate}
+        \item Application Layer (Next.js): Determines which API endpoints a user can access (e.g., preventing a Guest user from calling the createBooking endpoint).
+        \item Database Layer (PostgreSQL/RLS): Governs data access permissions based on the user's role and ID (defined in Section~\ref{subsection:Row-Level Security (RLS) Authorization}).
+    \end{enumerate}
+\end{enumerate}
 \subsection{Row-Level Security (RLS) Authorization}
+\label{subsection:Row-Level Security (RLS) Authorization}
+Authorization determining precisely what data a user is allowed to access is strictly enforced using PostgreSQL’s Row-Level Security (RLS) feature, managed through Supabase. RLS acts as the final, critical security layer.  The implementation adheres to the following core principles to ensure complete data isolation and integrity as below
+\begin{enumerate}
+    \item Centralized Security Logic: RLS policies are applied directly to all production-ready database tables (e.g., experiences, bookings, user\_profiles). This ensures that security logic resides within the database itself , preventing data access bypasses even if application code is compromised (excluding the privileged administrator role).
+    \item Fine-Grained Access Control: RLS policies dynamically utilize the authenticated user's ID (auth.uid()) and role, which are passed to the database via the validated JWT, to filter data at the row level. This provides tailored control for each user tier:
+    \begin{enumerate}
+        \item A Guest user is restricted to SELECT access only on experience rows marked as publicly browsable.
+        \item An Essential user is granted SELECT, INSERT, and UPDATE access exclusively on data rows linked to their own user ID (e.g., their profile or their initiated bookings). They also retain general SELECT access to standard experiences.
+        \item An Elite user receives elevated SELECT privileges to access unique inventory rows and priority status data, in addition to full control over their own data.
+    \end{enumerate}
+    \item Principle of Least Privilege: By enforcing RLS, the application layer is shielded from implementing complex authorization queries. The system automatically adheres to the principle of least privilege, as the database inherently restricts the data returned to precisely what the authenticated user is authorized to view.
+\end{enumerate}
 \section{User Onboarding and Personalization}
 \subsection{Resident Onboarding Flow}
 \subsection{Visitor Onboarding Flow}
