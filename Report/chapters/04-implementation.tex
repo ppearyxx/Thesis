@@ -3,7 +3,12 @@
 This chapter documents the practical realization of the design presented in Chapter~\ref{chapter:METHODOLOGY AND DESIGN} and the observable outcomes of that implementation. Screenshots, file structures, and concrete configuration details are presented here to demonstrate that each designed component was built in a working form, and that the platform operates end-to-end as intended.
 
 \section{Development Environment Setup}
+
 \subsection{Monorepo Structure}
+The repository follows a Turborepo layout with pnpm workspaces, organizing the codebase into three top-level directories: \texttt{apps/}, \texttt{packages/}, and \texttt{tooling/}. The structure is shown below:
+\thesisfigure{ch4-monorepo-structure.png}{Repository Folder Structure}{Repository Folder Structure}{}{monorepo-structure}
+This structure departs from the stock T3 Turbo reference layout in two deliberate ways. First, there are no Two structural decisions departing from the stock T3 Turbo layout. First, UI components are co-located within each app rather than shared through a ui package, because the mobile app (React Native) and the admin portal (Medusa's component system) do not share a rendering environment. Second, the admin application is excluded from the pnpm workspace and installed independently using npm (recorded as Architecture Decision Record 0002), because MedusaJS's dependency resolution expectations conflict with pnpm's strict workspace semantics.
+
 \subsection{CI/CD Pipeline}
 \subsection{Environment Isolation}
 \section{Core Module Implementation}
