@@ -1,4 +1,5 @@
 \chapter{METHODOLOGY AND DESIGN}
+\label{chapter:METHODOLOGY AND DESIGN}
 
 \section{System Context Diagram}
 \thesisfigure{ch3-system-context-diagram.png}{System Context Diagram}{System       
@@ -360,7 +361,61 @@ The separation of upcoming, past, and awaiting states, combined with derived rat
 
 \section{Internal Tools Design}
 \subsection{Customer Management}
+The Customer Management module serves as the central interface within the Medusa Admin Portal for overseeing all registered members of the Adnexio platform. When a user completes registration through the mobile application, their account data is automatically synchronized and provisioned as a customer record within Medusa, ensuring that the administrative team has immediate visibility over all active members from a single interface.
+
+Each customer record surfaces the following core information:
+\begin{itemize}
+    \item \textbf{Basic Profile:} The member's full name and registered email address.
+    \item \textbf{Membership Tier:} The user's current access level, either Guest, Essential, or Elite, reflecting their role assignment in the system.
+    \item \textbf{Order History:} A chronological log of all bookings and transactions associated with the account, providing the administrative team with a full view of the member's activity on the platform.
+\end{itemize}
+Administrators retain full editorial control over customer records and may update member details directly from within the portal where necessary, ensuring data accuracy across the platform.
+
 \subsection{Order Management}
+\label{subsection:Order Management}
+Order Management is designed as the interface through which the administrative team oversees all transactions placed on the platform. Each completed booking automatically generates an order record, giving the team full visibility over platform activity without manual data entry.
+
+Each order exposes three core pieces of information: order details (the experience or itinerary purchased and its metadata), payment status (captured, pending, failed, or refunded), and order status (active, completed, or cancelled). This separation between payment and order status is deliberate: a payment may succeed while an order is later cancelled, or a payment may fail while an order remains in a pending state. Treating the two as independent concerns allows the team to reason about each dimension without conflating them.
+
+Administrators retain the ability to manually cancel orders where necessary, with the order status automatically propagating across the platform upon action.
+
+Refund Management. Refund requests submitted by members are surfaced in a dedicated Refunds tab isolated from the general order list, reflecting that refund resolution is a distinct operational workflow requiring focused attention. 
+
+Two resolution outcomes are designed into the flow:
+\begin{itemize}
+    \item \textbf{Approve with Refund:} The refund is approved and automatically processed through the payment provider, with the order status updated to reflect the reimbursement.
+    \item \textbf{Approve without Refund:} The request is acknowledged and closed without financial reimbursement, with the order status updated to reflect the resolution.
+\end{itemize}
+This dual-outcome design acknowledges that not every refund request warrants a monetary return; some cases are resolved through alternative remediation, goodwill, or policy exceptions while still requiring a formal administrative response. In both cases, the order status synchronizes automatically upon the administrator's action, ensuring data consistency without manual intervention.
+
 \subsection{Sales Dashboard}
+The Sales Dashboard is designed as a lightweight, at-a-glance overview of key platform metrics, intended for recurring operational review rather than deep analytical inquiry. Its design intent is explicitly minimalist: surface the fewest metrics necessary to convey platform health at a glance, and defer deeper analysis to the individual order and customer modules.
+
+Three metrics are selected as the dashboard's core surface:
+
+\begin{itemize}
+    \item \textbf{Elite Customers:} The count of members currently holding active Elite status, reflecting the platform's premium-tier penetration.
+    \item \textbf{Bookings This Week:} The count of bookings placed in the current weekly period, reflecting platform transaction volume.
+    \item \textbf{Total Value Booked This Week:} The aggregate monetary value of bookings in the current weekly period, reflecting platform revenue.
+\end{itemize}
+The booking metrics are presented alongside week-over-week percentage change indicators to provide immediate trend context, while the Elite customer count is displayed as a standing figure because it reflects cumulative state rather than periodic activity. The rationale for this metric set is that together they answer three operationally relevant questions: how exclusive is the member base, how active is the platform, and how valuable is that activity.
+
 \subsection{PlatinumList Extension}
+The PlatinumList Extension is designed as the \textbf{operational interface for the data seeding pipeline} described in Section~\ref{section:Integrate external experience to system}. Where that section defines how external inventory is transformed into the platform's product schema, this extension provides the administrative surface through which that pipeline is invoked.
+
+A deliberate design decision is that synchronization is \textbf{manual rather than scheduled or automatic}. An administrator must explicitly trigger a sync for the pipeline to execute. This choice reflects two considerations: first, external inventory is vetted before inclusion in the curated catalogue, and an automated feed would bypass that editorial oversight; second, manual invocation gives the team direct control over when catalogue changes are introduced, preventing unexpected shifts in availability during sensitive operational windows.
+
+The sync itself is governed by a consistent design rule: \textbf{fetch the current window from the external API, remove stale records no longer available, and append newly retrieved data}. This fetch-prune-append pattern ensures that the platform's catalogue stays aligned with the external source's live inventory on every sync, rather than accumulating outdated entries or requiring separate cleanup operations.
+
+Upon completion, the extension surfaces a \textbf{success or failure status indicator} to the administrator. No deeper preview or management of synchronized records is provided within the extension, as all imported experiences are immediately queryable through the main product inventory the extension is scoped to triggering and reporting on the sync itself, not curating its output.
+
 \subsection{Notification System}
+The Notification system is designed to keep internal team members informed of key operational events across the platform. A foundational design decision is that notifications in this module are internal-only: they are dispatched exclusively to team recipients, not to platform users. User-facing transactional emails (such as booking confirmations) are handled separately through the payment and booking flows described in earlier sections.
+
+The system is triggered by a designed set of \textbf{four events}, each chosen because it requires administrative awareness or action:
+\begin{itemize}
+    \item \textbf{New Membership Invite Created:} Triggered when a user submits an Elite membership request, whether as a new sign-up or an upgrade from Essential. The team needs to know because the request requires manual review under the approval flow described in Section 3.13.1.
+    \item \textbf{Order Placed:} Triggered when a booking is confirmed for an internally managed experience. The team needs to know because internal experiences may require operational preparation (staffing, inventory allocation, vendor coordination) that is not handled automatically.
+    \item \textbf{Booking Cancellation:} Triggered when a user submits a cancellation request. The team needs to know regardless of whether the experience is refundable, because every cancellation warrants administrative acknowledgment and may require resolution under the refund flow described in Section~\ref{subsection:Order Management}.
+    \item \textbf{Itinerary Auto-Drafted:} Triggered when a previously published itinerary is automatically reverted to draft status because a referenced product or variant has been removed from the catalogue. The team needs to know because the itinerary now contains a broken reference and must be reviewed before republishing.
+\end{itemize}
