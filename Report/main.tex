@@ -67,6 +67,16 @@
 \def\thaidisscoadvisorthree{}
 \def\thaidissdegree{วิศวกรรมศาสตรบัณฑิต}
 
+% \thesisfigure{filename}{short LoF caption}{full caption}{cite key}{label}
+\newcommand{\thesisfigure}[5]{%
+  \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{#1}
+    \caption[#2]{#3 \cite{#4}}
+    \label{fig:#5}
+  \end{figure}
+}
+
 \definecolor{ganttfill}{RGB}{255,230,150}
 \definecolor{phasebg}{RGB}{210,178,200}
 

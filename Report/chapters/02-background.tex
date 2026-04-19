@@ -14,19 +14,9 @@ Monolithic architecture refers to a traditional software design pattern in which
 
 The primary advantage of monolithic architecture lies in its simplicity. It is straightforward to develop, test, and deploy, making it particularly suitable for small teams and minimum viable products (MVPs). Since all components share the same memory space and runtime environment, monolithic applications also benefit from reduced communication overhead compared to distributed systems. This architecture enables rapid iteration during early development phases, where time-to-market and cost efficiency are prioritized.
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.8\textwidth]{ch2-monolithic-architecture-1.png}
-  \caption[A Diagram of Monolithic Architecture]{A Diagram of Monolithic Architecture \cite{camunda2023monolith}}
-  \label{fig:monolithic-architecture}
-\end{figure}
+\thesisfigure{ch2-monolithic-architecture-1.png}{A Diagram of Monolithic Architecture}{A Diagram of Monolithic Architecture}{camunda2023monolith}{monolithic-architecture}
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.8\textwidth]{ch2-monolithic-architecture-2.png}
-  \caption[A diagram representing a modular monolithic architecture]{A diagram representing a modular monolithic architecture, where separate teams own distinct business domains such as Order and Consumer Management within a single, unified application \cite{richardson2023monolithic}}
-  \label{fig:modular-monolithic-architecture}
-\end{figure}
+\thesisfigure{ch2-monolithic-architecture-2.png}{A diagram representing a modular monolithic architecture}{A diagram representing a modular monolithic architecture, where separate teams own distinct business domains such as Order and Consumer Management within a single, unified application}{richardson2023monolithic}{modular-monolithic-architecture}
 
 \subsubsection{Domain Driven Design (DDD)}
 
@@ -48,7 +38,24 @@ A monorepo \cite{fernandez2024monorepo} is a single, unified version-controlled 
 
 To address the performance challenges inherent in a large monorepo, namely slow build and testing times, the build system Turborepo \cite{turborepo2025intro} is employed. Turborepo operates on two key principles: content-addressable caching and parallel task execution. Content-addressable caching ensures that if the input to a build task has not changed, the build output can be instantly retrieved from a cache, eliminating redundant computation. Parallel task execution, in turn, leverages the inherent dependencies between projects to run independent tasks concurrently, maximizing the utilization of computational resources.
 
-\section{Algorithms}
+\subsection{Software Frameworks and Libraries}
+\subsubsection{T3 Turbo Stack}
+The T3 Turbo Stack \cite{t3app2025intro} is a modern full-stack development framework that unifies web development workflows by combining several powerful, opinionated tools into a cohesive environment. It provides a foundation that emphasizes type safety, developer productivity, and scalability. This stack serves as a model for efficient development workflows in contemporary software engineering. For a more comprehensive understanding of the T3 architecture, please refer to Figure~\ref{fig:t3-turbo-stack}.
+
+\textbf{Core Components of the T3 Stack}
+\begin{itemize}
+  \item \textbf{Next.js:} A React framework for building fast, performant frontends. It handles complex setup like server-side rendering, routing, and API routes from a single codebase.
+  \item \textbf{tRPC:} This library enables type-safe API communication between your client and server. It allows you to call backend functions directly from your frontend code, automatically inferring types. According to Vercel's documentation, this approach ``reduces the likelihood of integration errors while also ensuring maintainability across large applications.''
+  \item \textbf{Tailwind CSS:} A ``utility-first'' CSS framework that lets developers build custom designs by composing pre-defined utility classes directly in their HTML.
+  \item \textbf{Prisma:} An open-source database toolkit that provides a type-safe and intuitive way to interact with your database.
+\end{itemize}
+
+\thesisfigure{ch2-T3-turbo-stack.png}{T3 Application Architecture Overview}{T3 Application Architecture Overview}{hxann2025t3architecture}{t3-turbo-stack}
+
+\textbf{Why the T3 Stack Matters}
+
+The T3 Stack’s significance lies in its powerful combination of tools, which addresses common challenges in full-stack development. Its emphasis on type safety is a game-changer for mitigating runtime errors. By sharing types across the entire stack --- from the database (Prisma) to the API (tRPC) and the UI (Next.js with TypeScript) --- it prevents bugs that often arise from mismatched data.
+Furthermore, the stack’s ``convention over configuration’’ philosophy greatly enhances developer productivity, allowing for quicker iteration and more efficient development. This streamlined workflow ensures that as an application scales, it remains highly maintainable and easier for new team members to work on.
 
 \subsection{Algorithm I}
 
