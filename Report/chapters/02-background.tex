@@ -136,6 +136,7 @@ PlatinumList [26] is a prominent ticketing and event booking platform in the Mid
 \thesisfigure{ch2-platinum-list.png}{Discovery PlatinumList Page}{Discovery PlatinumList Page}{platinumlist2025dubai}{platinum-list-discovery-page}
 
 \subsubsection{Stripe}
+\label{sec:stripe}
 Stripe \cite{stripe2025homepage} is a global leader in online payment infrastructure, providing a developer-centric suite of APIs and tools for managing financial transactions. Its core function is to provide the building blocks that enable developers to implement various payment functionalities directly within their applications. This includes support for one-time checkouts and recurring subscription billing, which are essential for the project's tiered membership model. Stripe's robust platform also provides integrated features for fraud prevention and security, which are critical for ensuring the integrity and reliability of all financial transactions within the application. Its modular design and comprehensive documentation allow for seamless integration, enabling developers to build a secure and scalable payment system tailored to the project's specific needs.
 
 \subsubsection{Freshdesk}
@@ -228,5 +229,15 @@ Based on the competitive analysis (Table~\ref{tab:market-comparison}), the Adnex
   \item \textbf{Bespoke Services:} The ability to provide bespoke travel planning and luxury goods procurement is a core offering across all four platforms, highlighting its importance in meeting the high standards of the target market.       
 \end{enumerate}
 \section{Payment Gateway Analysis}
+To determine the most suitable financial infrastructure for the project, an evaluation was conducted comparing the selected solution, Stripe (defined in Section~\ref{sec:stripe}), against two other market leaders: 2C2P and PayPal.
+
 \subsection{Alternative Solutions}
+\begin{enumerate}
+  \item 2C2P \cite{2c2p2025docs} is a Southeast Asia–focused payment service provider that offers online, mobile, and offline payment processing for medium to large merchants. Its platform supports cards, e‑wallets, bank transfers, and various alternative payment methods, and is widely used by regional enterprises that require strong local payment coverage.
+  \item PayPal \cite{tipalti2025paypal} is a global online payment platform that enables individuals and businesses to send and receive money via a digital wallet linked to cards and bank accounts. For merchants, PayPal provides payment gateway services, invoicing, and support for one‑time and recurring payments through business and developer tools.
+\end{enumerate}
 \subsection{Comparative Assessment}
+Stripe was selected as the primary infrastructure because of its developer-centric API and native support for complex subscription logic (Stripe Billing). Unlike competitors, it allows for a fully white-labeled checkout flow where users never leave the application (via Stripe Elements), and it automatically handles membership lifecycle events such as proration, plan upgrades, and failed payment retries (Smart Retries) without requiring custom backend code.
+\input{tables/payment-comparison}
+While 2C2P offers superior local payment channels for Southeast Asia, it lacks the necessary infrastructure for the UAE target market and relies on complex off-site redirects. Similarly, while PayPal offers high consumer trust, its lack of native tiered membership logic would require significant custom development.
+Therefore, Stripe remains the optimal choice. It provides native support for the UAE and manages the entire membership lifecycle. This outweighs the regional benefits of 2C2P, ensuring a scalable and frictionless experience for the platform's subscribers.
