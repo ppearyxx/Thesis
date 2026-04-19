@@ -48,11 +48,56 @@ Docker is used only as a local development dependency for running the Supabase s
 
 \section{Core Module Implementation}
 \subsection{Authentication and Authorization}
+The authentication and authorization module is implemented on Supabase Auth, with session validation handled in the tRPC middleware layer of the Next.js API. This module realizes the design documented in Sections 3.4 and 3.5.
+
+\textcolor{red}{\textbf{TODO: Change Inline Ref}} \\
+
+\textbf{Guest (Anonymous) Access.} The guest flow described in Section 3.4.1 is fully implemented. When a user taps "Continue as Guest" on the welcome screen, the application invokes supabase.auth.signInAnonymously() with the Guest role embedded as metadata on the created session. The user is then routed into the main browsing experience as an authenticated anonymous session. Guest users can browse the catalog and add items to the cart but cannot complete bookings or modify profile data, with these restrictions enforced through the role-permissions matrix described below. Figure~\ref{fig:authentication-and-authorization-1} shows the welcome screen and the resulting browsing experience available to guest users.
+\thesisfigure{ch4-authentication-and-authorization-1.png}{Guest Access Flow}{Guest 
+  Access Flow \\ (a) welcome screen with ``continue as guest'' option, \\ (b) browse tab available to the anonymous session.}{}{authentication-and-authorization-1}
+
+  \textcolor{red}{\textbf{TODO: Change Inline Ref}} \\
+
+\textbf{Essential Registration and Email Verification.} Essential registration follows the flow designed in Section 3.4.2. Email confirmation is hard-enforced at the Supabase configuration level (\texttt{enable\_confirmations = true} in \texttt{supabase/config.toml}), which means no soft-nudge bypass is permitted: a newly registered user is routed to a dedicated verification screen and cannot reach the main applicFigure~\ref{fig:authentication-and-authorization-2}Figure~4.4 shows the sign-up screen, the email verification screen, and the verification email template delivered to the user.
+\thesisfigure{ch4-authentication-and-authorization-2.png}{Essential Registration Flow}{Essential Registration Flow \\ (a) sign-up screen, \\ (b) email verification screen, \\ (c) verification email template}{}{authentication-and-authorization-2}
+
+\textbf{Password Reset.} A password reset flow is implemented using Supabase's native password recovery mechanism, with a custom email template rendered from \texttt{supabase/templates/reset\_password.html}. Figure~\ref{fig:authentication-and-authorization-3} shows the forgot-password and reset-password screens as they appear to the user.
+
+\thesisfigure{ch4-authentication-and-authorization-3.png}{Password Reset Flow}{Password Reset Flow (a) forgot-password screen, (b) reset-password screen}{}{authentication-and-authorization-3}
+
+\textbf{JWT Validation in the Next.js API.} Session validation is implemented as a tRPC middleware layer. Each incoming tRPC request carries a bearer token in its authorization header; the \texttt{createTRPCContext} function decodes the token via \texttt{supabase.auth.getUser()} and attaches the resolved user to the request context. The \texttt{protectedProcedure} wrapper then enforces the presence of a valid user on every procedure that requires authentication, rejecting unauthenticated requests before they reach any business logic. This arrangement centralizes the authentication gate in a single layer and eliminates the need for individual procedures to re-validate the session.
+
+\textbf{Role-Based Access Control.} The platform defines four roles through a numeric \texttt{ROLE\_ENUM}: Admin (1), Guest (2), Essential (3), and Elite (4), persisted relationally through a \texttt{roles} table joined to \texttt{users} via a \texttt{user\_roles} association table. Twenty-three discrete permissions are defined in a \texttt{permissions} table and linked to roles through \texttt{role\_permissions}. This relational structure allows permissions to be adjusted without schema changes and supports the tier-specific capabilities documented in Section~3.3.
+
+\textcolor{red}{\textbf{TODO: Change Inline Ref}} \\
+
+\textbf{Row-Level Security.} The RLS design described in Section 3.5.2 is implemented selectively rather than uniformly. RLS policies are applied to four tables where user-scoped data isolation is most critical: \texttt{public\_images}, \texttt{private\_images}, \texttt{user\_roles}, and \texttt{onboarding\_stage}. For remaining tables (including \texttt{profile}, \texttt{roles}, \texttt{permissions}, \texttt{payments}, and itinerary-related tables), authorization is enforced in application code through the \texttt{protectedProcedure} wrapper combined with explicit ownership checks within individual tRPC procedures. This partial application of RLS reflects a pragmatic trade-off: tables where policy logic is straightforward and the security surface is sensitive receive RLS protection, while tables where policy expression would require complex joins or where access patterns are well-contained within application code are authorized at the application layer.
+
 \subsection{User Onboarding and Personalization}
 \subsubsection{Tier Routing and Entry Conditions}
+The routing logic at the application entry point distinguishes between user states and dispatches users to the appropriate post-authentication surface. Only users in the \texttt{PASSWORD\_SET\_NOT\_ONBOARDED} state reached by Elite users after their invitation has been accepted and their initial payment completed are routed into the onboarding flow. Essential users, already-onboarded Elite users, and Guest sessions are routed directly to the main browsing experience. This implementation confirms the design claim that onboarding is Elite-exclusive, with no Essential-tier onboarding path present in the codebase.
+
+The flow opens with an Elite welcome screen that introduces the purpose of onboarding and offers a "skip for now" affordance. Upon proceeding, the user is presented with the residency question resident or visitor which determines the branch of onboarding that follows. Figure~\ref{fig:tier-routing-and-entry-conditions-1} shows the Elite welcome screen and the residency selection step.
+\thesisfigure{ch4-tier-routing-and-entry-conditions-1.png}{Elite Onboarding Entry Point}{Elite Onboarding Entry Point \\ (a) welcome screen with ``start onboarding'' and ``skip for now'' options, (b) residency selection step}{}{tier-routing-and-entry-conditions-1}
+
 \subsubsection{Resident Branch}
+Users who select "resident" are presented with a two-step questionnaire focused on establishing their consistent lifestyle patterns within the UAE. Step 2 collects their area of residence, typical weekly routine, lifestyle priorities (e.g., dining, wellness, fitness, private events), types of assistance they seek from the platform, and planning preferences. Step 3 collects dietary needs, preferred communication method, and whether the user wishes to receive curated weekly suggestions. Figure~\ref{fig:resident-branch} shows the resident onboarding screens.
+
+\thesisfigure{ch4-resident-branch.png}{Resident Onboarding Questionnaire}{Resident Onboarding Questionnaire \\ (a) step 2: location, typical week, lifestyle priorities, \\ (b) step 3: dietary, communication, weekly suggestions}{}{resident-branch}
+
 \subsubsection{Visitor Branch}
+Users who select "visitor" are presented with a structurally different questionnaire focused on trip logistics rather than routine. Step 2 collects the location and travel dates of their visit, their core interests (dining, wellness, culture, nature, VIP, sports, events, networking, private beaches), their preferred itinerary pace, and any pre-arrival services required (airport transfers, private driver, hotel booking, VIP event tickets, personal assistant). Step 3 collects dietary preferences and any additional requirements.
+
+The visitor branch differs from the resident branch not only in the questions asked but in the underlying data model captured. The two branches write distinct key sets under the \texttt{step\_data} JSONB column, reflecting the different temporal and contextual concerns of each user type. Figure~\ref{fig:visitor-branch} shows the visitor onboarding screens.
+
+\thesisfigure{ch4-visitor-branch.png}{Visitor Onboarding Questionnaire}{Visitor Onboarding Questionnaire \\ (a) step 2: travel dates, interests, pace, services, \\ (b) step 3: dietary preferences and additional requirements}{}{visitor-branch}
+
 \subsubsection{Data Storage and Completion}
+
+Onboarding responses are persisted to a single \texttt{onboarding\_stage} table with the schema (\texttt{user\_id}, \texttt{user\_type}, \texttt{step\_data jsonb}, \texttt{completed\_at}). All preference data — interests, travel dates, dietary restrictions, preferred pace, and so on — is nested under the \texttt{step\_data} field using step-keyed sub-objects (\texttt{step1}, \texttt{step2}, \texttt{step3}). The choice of a single JSONB column rather than a normalized preferences schema reflects the exploratory nature of onboarding data in an early-stage product: the set of questions may evolve as the platform matures, and JSONB storage accommodates schema evolution without migration overhead.
+
+Onboarding completion is tracked through a dual-signal mechanism. When the user submits the final step, the \texttt{completeOnboarding} mutation sets \texttt{onboarding\_completed\_at} on the user's profile record and writes \texttt{completed\_at} on the \texttt{onboarding\_stage} row. The user's resolved state then evaluates to \texttt{ONBOARDED}, which routes subsequent sessions directly to the main application rather than back into the onboarding flow. Every step of the onboarding flow renders a progress bar showing the user's position within the three-step sequence (e.g., ``Step 2 of 3''), providing a clear sense of progression and remaining effort. Figure~\ref{fig:data-storage-and-completion} shows a representative \texttt{onboarding\_stage} row for an onboarded user.
+\thesisfigure{ch4-data-storage-and-completion.png}{Stored Onboarding Data in Supabase}{Stored Onboarding Data in Supabase}{}{data-storage-and-completion}
 \subsection{Payment System}
 \subsubsection{One-Time Experience Purchases}
 \subsubsection{Elite Subscription Billing}
