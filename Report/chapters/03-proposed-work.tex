@@ -77,6 +77,38 @@ The Elite User is the premium tier for affluent clients seeking a high-touch, fu
 The Administrator is an internal, back-office role with comprehensive oversight and control of the entire platform. Administrators have privileged access to all platform functionalities, including both the Essential and Elite user views. Their primary responsibilities include overseeing all in-app payments, processing manual transactions, sending custom notifications to members, and managing the curated catalogue of experiences.
 
 \section{User Registration Flow}
+The Adnexio platform implements a three-tiered access system which are Guest, Essential, and Elite. Each with distinct registration and authorization flows managed through Supabase Auth and the Next.js API layer. This stratified architecture ensures users receive immediate provisioning of appropriate permissions and data access through Row-Level Security (RLS) policies enforced at the PostgreSQL database level.
+
+\subsection{Guest User Flow (Anonymous Access)}
+The Guest flow enables rapid, frictionless platform exploration, allowing prospective members to browse available experiences without requiring upfront registration commitment.
+
+\textbf{Process Flow:}
+\begin{enumerate}
+    \item Session Initiation: The mobile application (Expo App) establishes an anonymous session by invoking signInAnonymously() through the Supabase client SDK.
+    \item Authentication and Token Generation: Supabase Auth provisions an ephemeral user record and issues a JSON Web Token (JWT) for session management.
+    \item Client-Side Session Management: The JWT is securely persisted on the client device, granting temporary, read-only access to the Browsing Domain. This restricted access state corresponds to users who select "Continue as Guest" on the application's welcome screen.
+\end{enumerate}
+
+\subsection{Essential User Flow (Standard Registration)}
+The Essential tier represents the platform's standard registration pathway, providing authenticated users with permanent access to core platform functionality through a self-service onboarding process. \\
+\textbf{Process Flow:}
+\begin{enumerate}
+    \item Registration Initiation: Users submit email credentials and a secure password through the mobile application interface, triggering a call to Supabase.signUp().
+    \item Email Verification: Supabase dispatches a verification email containing a unique confirmation link. This verification step validates user identity and mitigates fraudulent account creation.
+    \item Account Activation: Upon clicking the verification link, the user's authentication status is updated to "verified" within the Supabase authentication database.
+    \item Profile Provisioning: The system automatically generates a corresponding user profile record with Essential role assignment, unlocking access to core features including experience booking and personalized recommendations.
+\end{enumerate}
+
+\subsection{Elite User Upgrade Flow (Invitation and Payment)}
+Elite status represents a premium tier requiring application-based approval and subscription payment, processed through the Medusa e-commerce backend to ensure secure financial transaction handling. \\
+\textbf{Process Flow:}
+\begin{enumerate}
+    \item Upgrade Initiation: Authenticated Essential users request tier elevation by selecting "Upgrade to Elite" within the application interface.
+    \item Invitation Generation: The application triggers a Next.js API endpoint that interfaces with the Medusa API, specifically invoking the invite.createInvite service to manage subscription product logic and pricing tiers.
+    \item Payment Processing: Medusa orchestrates the payment workflow through Stripe's payment gateway, collecting either annual or monthly recurring subscription charges as configured for Elite membership.
+    \item Role Elevation: Upon successful payment confirmation via Stripe webhook, the user's role assignment in the Supabase database is automatically elevated to Elite status. This promotion grants immediate access to premium features including VIP experiences, priority booking privileges, and dedicated concierge services.
+\end{enumerate}
+
 \subsection{Guest User Flow (Anonymous Access)}
 \subsection{Essential User Flow (Standard Registration)}
 \subsection{Elite User Upgrade Flow (Invitation and Payment)}
