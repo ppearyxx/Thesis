@@ -135,9 +135,39 @@ Authorization determining precisely what data a user is allowed to access is str
     \item Principle of Least Privilege: By enforcing RLS, the application layer is shielded from implementing complex authorization queries. The system automatically adheres to the principle of least privilege, as the database inherently restricts the data returned to precisely what the authenticated user is authorized to view.
 \end{enumerate}
 \section{User Onboarding and Personalization}
+The user onboarding phase is a critical step in the Adnexio experience, designed to gather behavioral and preference data immediately after registration of an elite role. The data collected during this phase is instrumental in providing the foundational context required by the AI Recommendation Domain (GPT-4o) for generating personalized itineraries. The onboarding process is divided based on the user's status within the UAE market.
+
 \subsection{Resident Onboarding Flow}
+For users residing in the UAE, the system collects data related to their consistent lifestyle and location, enabling location-specific and routine-based recommendations.
+\begin{itemize}
+    \item Geographical Context: Collects the user's current area of residence in the UAE.
+    \item Routine Analysis: Gather information on the user's "typical week," establishing patterns for leisure time, work schedules, or common weekly activities.
+\end{itemize}
 \subsection{Visitor Onboarding Flow}
+For temporary visitors, the onboarding focuses on travel logistics and the purpose of the trip to deliver time-constrained and goal-oriented recommendations.
+\begin{itemize}
+    \item Origin and Duration: Collects the user's country of origin and the start/end dates of their visit to the UAE. This defines the temporal window for all future itinerary and experience searches.
+    \item Trip Context: Determines the "type of trip" (e.g., business, leisure, family), which heavily influences the tone and nature of AI-generated recommendations.
+    \item Service Requirements: Documents any initial pre-arrival service needs, such as:
+    \begin{itemize}
+        \item Airport transfers.
+        \item Private driver or car rental.
+        \item Booking premium hotel or villa stays.
+        \item VIP event tickets.
+        \item Personal assistant support during the stay.
+    \end{itemize}
+\end{itemize}
 \subsection{Universal Personalization Inputs}
+Regardless of residency status, all users must define their core interests, dietary requirements, and preferred experience pace to guide the AI assistant and human concierges effectively.
+\begin{itemize}
+    \item \textbf{Core Interests:} Users select categories of interest (e.g., dining, wellness, bars, safari, culture, nature, VIP sports, events, networking, private beaches). This forms the initial vector embedding for semantic comparison against the experience database.
+    \item \textbf{Dietary Preferences:} Users specify any mandatory dietary restrictions or requirements, including:
+    \begin{itemize}
+        \item Vegetarian, Vegan, Gluten-free, Dairy-free, Halal.
+        \item An "Other" field for unique or less common requirements.
+    \end{itemize}
+    \item \textbf{Preferred Pace:} Users define their desired itinerary pace (e.g., Relaxed, Balanced, Packed), which sets a critical constraint for the GPT-4o model when constructing daily itineraries.
+\end{itemize}
 \section{Payment System Architecture}
 \subsection{Non-Subscription Payment Flow}
 \subsection{Recurring Subscription Payment Flow}
