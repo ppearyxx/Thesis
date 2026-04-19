@@ -169,8 +169,46 @@ Regardless of residency status, all users must define their core interests, diet
     \item \textbf{Preferred Pace:} Users define their desired itinerary pace (e.g., Relaxed, Balanced, Packed), which sets a critical constraint for the GPT-4o model when constructing daily itineraries.
 \end{itemize}
 \section{Payment System Architecture}
+The Adnexio platform's commerce functionality is supported by the Stripe payment processing platform, which handles two distinct transaction models requiring one time purchase and tiers subscriptions. This robust architecture ensures security, scalability, and accurate financial record-keeping by integrating the Next.js Server with Stripe's APIs and Webhooks.
 \subsection{Non-Subscription Payment Flow}
+The non-subscription flow is used for one-time payments, such as booking a single experience or purchasing goods through the platform, primarily supporting the \textbf{Essential} user base. This flow is synchronous, with the transaction status immediately confirmed by the mobile application
+
+\textcolor{red}{\textbf{TODO: ADD IMAGE}}
+
+The mobile application (Expo App) inßitiates the checkout process by transmitting the order payload, including the selected experience metadata and user identity, to the Next.js Server.
+The server consults the Supabase Database to verify the existence of a persistent \texttt{stripe\_customer\_id}. If the ID is absent, a new customer object is created within Stripe via the Stripe API, and the resultant ID is securely persisted in the user's profile record in Supabase.
+
+\textbf{Payment Intent Creation and Processing:}
+The Next.js Server securely creates a Payment Intent or Checkout Session with Stripe, which defines the transaction amount and user context.
+Stripe returns a \texttt{client\_secret} to the server, which is then relayed to the Expo App.
+The app utilizes the \texttt{client\_secret} to initialize the secure, PCI-compliant Stripe PaymentSheet modal, facilitating direct input of payment credentials by the user.
+
+\textbf{Order Fulfillment and App Confirmation:}
+Upon receiving successful payment confirmation, the Expo App transmits the final session ID to the Next.js Server for server-side verification.
+The server retrieves the conclusive transaction status from Stripe, confirms the success, marks the corresponding booking/order record as Confirmed in the Supabase Database, and triggers transactional emails (via Resend), thereby granting the user immediate access to the purchased service.
 \subsection{Recurring Subscription Payment Flow}
+\textcolor{red}{\textbf{TODO: Change Inline Ref}} \\
+The Elite tier subscription flow is mandated for the collection of recurring revenue (annual or monthly), leveraging Stripe's subscription engine for automated billing and lifecycle management. The entire process, detailed in Figure 3.12 and 3.13, Elite Subscription Sequence Diagram, is inherently asynchronous, relying on webhooks for maintaining data synchronization and ensuring continuous access control. \\
+\textcolor{red}{\textbf{TODO: ADD IMAGE}}
+
+\begin{enumerate}
+    \item \textbf{Subscription Selection and Backend Setup (Steps 1--6):} The user initiates the flow by selecting their preferred billing interval (Monthly/Yearly) on the Next.js Website. The Next.js Server retrieves the corresponding pricing table from the Stripe API and returns the Elite subscription options to the user.
+    \item \textbf{Customer Management and Session Initialization (Steps 7--17):} The application requests the creation of a Payment Intent, prompting the Next.js Server to perform a customer verification step against the Supabase Database. The server either retrieves an existing \texttt{stripe\_customer\_id} or creates a new customer record via the Stripe API. A Stripe Checkout Session is then created in subscription mode, and the resulting \texttt{client\_secret} is returned to the application to initialize the secure payment interface.
+    \item \textbf{Payment Processing and Access Grant (Steps 18--22):} The user completes the payment within the secure PaymentSheet. Upon success, the application sends the session ID back to the Next.js Server for verification. The server retrieves the final subscription details from Stripe, confirms the payment, and instantly confirms the Elite subscription activation in the Supabase Database, granting the user immediate Elite privileges.
+    \item \textbf{Asynchronous Official Sync (Webhook Processing) (Steps 23):} This parallel process is critical for data permanence. Stripe initiates the official sync by sending a \texttt{checkout.session.completed} event to the dedicated Stripe Webhook endpoint. The endpoint verifies the signature, processes the subscription data, and inserts or updates the full subscription record (including the \texttt{stripe\_subscription\_id} and Status: Active) into the Supabase Database. This ensures database state consistency with the Stripe billing engine.
+    \item \textbf{Future Billing and Status Management (Steps 24--25):} The webhook infrastructure maintains the integrity of the subscription lifecycle and automatically enforces access control:
+    \begin{enumerate}
+        \item \textbf{Successful Renewal (Steps 24):} 
+        \begin{enumerate}
+            \item Stripe sends an \texttt{invoice.paid} event. The webhook verifies the event and confirms the subscription status remains Active in the database.
+        \end{enumerate}
+        \item \textbf{Payment Failure (Steps 25):} 
+        \begin{enumerate}
+            \item Stripe sends an \texttt{invoice.payment\_failed} event. The webhook automatically marks the user's subscription record as \texttt{past\_due} in the database, triggering alerts and restricting Elite privileges.
+        \end{enumerate}
+    \end{enumerate}
+\end{enumerate}
+
 \section{Integrate external experience to system}
 \subsection{Matching Data using from API with Application side}
 \section{Product Inventory}
