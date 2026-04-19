@@ -29,9 +29,37 @@ The diagram also introduces our approach to Domain-Driven Design (DDD), which or
     \item \textbf{Admin Tools:} This domain provides the necessary tools for the internal team. Content Creation allows staff to create and edit experiences, and the Analytics subdomain offers reporting tools for tracking platform activity and engagement.
 \end{itemize}
 \section{System Architecture Design}
-Test
+\thesisfigure{ch3-system-architecture-design.png}{System Architecture              
+  Design}{System Architecture Design}{}{system-architecture-design}
+Based on the system architecture diagram (Figure~\ref{fig:system-architecture-design}) , the platform's core architecture can be broken down into three main areas: Applications, Admin Stack, and Infrastructure. Each area contains specialized services that work together to deliver a seamless and robust user experience.
+The Applications layer serves as the primary entry point for our members. It consists of two native mobile apps, one for iOS and one for Android, which are responsible for the entire user-facing experience. These applications handle fetching all necessary data for browsing experiences and submitting booking requests to our backend. To simplify development and ensure consistency, both apps communicate exclusively with a central Next.js API Host. This API serves as a dedicated gateway for the mobile applications, simplifying the client-side logic by taking in straightforward requests and then handling the complex task of communicating with multiple backend services to fulfill them.
+The Infrastructure layer is the core of our service delivery, containing all the backend services that power the platform. When a request is made from the mobile app, the Next.js API first validates the user's session and permissions with our Auth service, which handles Role-Based Access Control (RBAC). All core business data, such as user information, booking details, and preferences, is stored and managed in our Postgres Database. For payments, the API integrates with Stripe Payments to create payment intents and securely process transactions. Upon successful payment, Stripe sends webhook updates back to our database to confirm the transaction. To enhance personalization, the API also communicates with GPT-4o to perform AI-driven actions, such as generating tailored experience recommendations for users. Finally, our Email service is triggered by events like new bookings or successful payments to send out notifications, receipts, and alerts to members.
+The Admin Stack is a separate but vital component for managing the platform's operations. Internal teams use the Medusa Admin Dashboard to perform a variety of administrative actions, including customer management and experience curation. The dashboard interacts with the Medusa.js API, which functions as our core e-commerce engine. A key feature of this stack is its ability to create a diverse marketplace; the Medusa.js API manages both our own first-party experiences and integrates with external Vendor APIs, such as PlatinumList and SevenRooms, to syndicate and manage third-party offerings.
 \subsection{Medusa's Architecture}
+\thesisfigure{ch3-medusa-architecture.png}{Medusa's Architecture}{Medusa's         
+  Architecture}{}{medusa-architecture} 
+While (Figure~\ref{fig:system-architecture-design}), outlines the high-level service interactions,  (Figure~\ref{fig:medusa-architecture}) provides a microscopic view of the internal architecture of the Medusa backend itself. The system enforces a strict vertical decomposition, separating the request lifecycle into three functional layers to ensure modularity and scalability.
+\begin{enumerate}
+    \item The HTTP Layer (Ingress \& Session Management) The top-most layer functions as the exclusive ingress point for external consumers, specifically the Storefront and Admin applications. Incoming requests are handled via API Routes, which sanitize input and manage authentication states. As indicated by the lateral connection in the diagram, this layer offloads session management to an external Redis instance, ensuring the API server remains stateless and performant under load.
+    \item The Workflows Layer (Business Logic Orchestration) Situated below the HTTP interface is the Workflows layer. Utilizing the Workflows SDK, this layer abstracts complex business logic away from the API routes. It acts as an orchestration engine, coordinating multi-step operations (such as "Complete Order" or "Process Return") to ensure transactional integrity before passing data down to the domain modules.
+    \item The Module Layer (Domain Isolation) The foundation of the architecture is the Modules layer, which encapsulates specific data models and utilities. This layer is bifurcated into\textbf{ two distinct categories:}
+    \begin{itemize}
+        \item Commerce Modules: These modules manage the core e-commerce domains. As illustrated by the icons in the diagram, specific modules are dedicated to Product Management, Cart Operations, Customer Profiles, and Pricing Strategies. Each module operates in isolation, preventing domain coupling.
+        \item Infrastructure Modules: Running parallel to the commerce logic, these modules handle system-level operations. This includes the Workflow Engine for state management, Caching services for performance, and Event buses for asynchronous communication. These infrastructure modules act as the interface between the application logic and external services (such as the database or third-party APIs).
+    \end{itemize}
+\end{enumerate}
 \subsection{Deployment Pipeline Structure}
+\thesisfigure{ch3-deployment-pipeline-structure.png}{Deployment Pipeline Diagram}{Deployment Pipeline Diagram}{}{deployment-pipeline-structure}
+Figure~\ref{fig:deployment-pipeline-structure}, illustrates the platform’s Continuous Integration and Continuous Deployment (CI/CD) architecture. The system employs a dual-repository strategy hosted on Bitbucket to enforce a strict separation of concerns, ensuring independent development lifecycles for the consumer-facing application and the back-office infrastructure. 
+The deployment pipeline is delineated into two automated tracks:
+\begin{enumerate}
+    \item \textbf{The Application Track (Monorepo)} The upper track orchestrates the consumer-facing components, leveraging a monorepo structure to centralize both mobile and web logic. A commit to this repository triggers concurrent workflows:
+    \begin{itemize}
+        \item \textbf{Mobile Application Build (Expo):} The pipeline integrates with Expo Application Services (EAS) to compile source code into native binaries, automating the submission process to the Apple App Store (iOS) and Google Play Store (Android).
+        \item \textbf{API Deployment \& Data Sync (Vercel \& Supabase):} Simultaneously, the serverless API (Next.js) is deployed via Vercel. Notably, the pipeline executes a "Run Migrations" step against the Supabase instance, ensuring the database schema is synchronized with the new application code before the Public API serves live traffic.
+    \end{itemize}
+    \item \textbf{The Admin Track} The lower track manages the Admin Repository, which is isolated from client-side dependencies. Updates trigger a deployment to Render, which hosts the backend infrastructure (MedusaJS). Similar to the application track, this workflow enforces a "DB Migration" step against the underlying PostgreSQL database to ensure data integrity prior to updating the live Admin Portal.
+\end{enumerate}
 \section{User Roles \& Permissions}
 \section{User Registration Flow}
 \subsection{Guest User Flow (Anonymous Access)}
