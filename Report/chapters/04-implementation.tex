@@ -304,8 +304,37 @@ Figure~\ref{fig:my-bookings-2} shows the booking detail screen in its standard s
 
 \section{AI Itinerary Builder Implementation}
 \subsection{Session Entry and Conversational Flow}
+Elite users enter the builder through two affordances on the mobile application: the "create itinerary" tile on the Browse tab, and a floating AI button on the main surface. Non-Elite users are routed to the tier upgrade prompt instead. The chat modal is titled "ask george" and opens with the assistant message "welcome to your ai travel assistant! when would you like to travel?".
+
+The four-stage conversational flow designed in Section 3.10.3 is implemented as a six-stage mandatory sequence encoded in the system prompt: session start → date validation → pace confirmation → guided exploration → itinerary creation → booking completion. The flow is prompt-enforced rather than state-machine-enforced; at the configured temperature of 0.3 the model follows the prescribed sequence reliably in practice."Ask George" chat interface mid-conversation
+\thesisfigure{ch4-session-entry-and-conversational-flow.png}{"Ask George" chat interface mid-conversation}{"Ask George" chat interface mid-conversation}{}{session-entry-and-conversational-flow}
+
 \subsection{Personalization Inputs and Tool-Driven Generation}
+The builder is powered by GPT-4o via the Vercel AI SDK with a maximum of nine tool-call steps per response. Personalization is assembled at request time: the mobile client transmits the user's onboarding profile with each message, and the server bakes the user's interests, trip type, and dietary preferences (Section 4.2.2) directly into the per-request system prompt.
+GPT-4o is given access to nine registered tools covering four capabilities:
+
+\begin{enumerate}
+  \item \textbf{Profile read/write} --- \texttt{get\_user\_travel\_dates}, \texttt{update\_user\_travel\_dates}, \texttt{get\_user\_preferred\_pace}, \texttt{update\_user\_preferred\_pace}.
+  \item \textbf{Catalog query} --- \texttt{get\_available\_products} filters the Medusa catalog by dates, interests, and pace.
+  \item \textbf{Itinerary assembly} --- \texttt{create\_itinerary\_from\_products}, \texttt{update\_itinerary}, \texttt{publish\_itinerary}.
+  \item \textbf{Knowledge retrieval} --- \texttt{search\_knowledge\_base} performs semantic vector search over user-uploaded documents.
+\end{enumerate}
+
 \subsection{Generated Itinerary Output and Cart Integration}
+The itinerary is delivered through streamed markdown in the chat, while the day-by-day card layout is rendered from the structured tool-result object returned by \texttt{create\_itinerary\_from\_products}. Titles, times, and prices are parsed from the tool's JSON output rather than from free-text prose, avoiding the brittleness of prose-parsing while preserving the conversational feel.
+
+\thesisfigure{ch4-generated-itinerary-output-and-cart-integration.png}{Generated itinerary with day cards and ``add this itinerary to cart'' action}{Generated itinerary with day cards and ``add this itinerary to cart'' action}{}{generated-itinerary-output-and-cart-integration}
+
+On user confirmation, \texttt{publish\_itinerary} executes a three-step flow:
+\begin{enumerate}
+  \item \textbf{Publish} — transition the itinerary from draft to published.
+  \item \textbf{Verify availability} — confirm each line item is still bookable.
+  \item \textbf{Add to cart} — post each line item to Medusa's /store/carts/{cartId}/line-items endpoint with metadata tying it back to the itinerary.
+\end{enumerate}
+
+This reuses the \textbf{same Medusa endpoint} as the manual booking path (Section 4.4.3), so AI-generated itineraries flow through the identical cart → checkout → Stripe → order pipeline as any other booking.
+
+
 \section{Internal Tools Implementation}
 \subsection{Customer Management}
 \subsection{Order and Refund Management}
