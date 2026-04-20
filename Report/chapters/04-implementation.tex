@@ -334,13 +334,78 @@ On user confirmation, \texttt{publish\_itinerary} executes a three-step flow:
 
 This reuses the \textbf{same Medusa endpoint} as the manual booking path (Section 4.4.3), so AI-generated itineraries flow through the identical cart → checkout → Stripe → order pipeline as any other booking.
 
-
 \section{Internal Tools Implementation}
+The operations admin portal is implemented primarily as a Medusa admin extension within the separate backend repository. This chapter evidences its operation through screenshots of that deployment and documents the integration points within this monorepo that connect the mobile client and the public-facing API to those admin surfaces.
+
 \subsection{Customer Management}
-\subsection{Order and Refund Management}
+The customer management surface lives in the Medusa admin. Each registered member appears as a Medusa customer record exposing the fields documented in Section 3.13.1 basic profile, membership tier, and order history. Figure~\ref{fig:customer-management} shows a representative customer record.
+
+\thesisfigure{ch4-customer-management.png}{Customer record in the Medusa admin}{Customer record in the Medusa admin}{}{customer-management}
+
+\textbf{Elite Invites.} The Elite-request pathway is wired end-to-end through this monorepo, the Medusa backend, and a Supabase Edge Function. The flow is:
+\begin{enumerate}
+  \item The mobile client calls the \texttt{invites.createInvite} tRPC procedure via the \texttt{useRequestEliteAccess} hook.
+  \item The procedure posts to Medusa's \texttt{/admin/membership-invites} endpoint, which persists the invite record visible in the Medusa admin's Invites sidebar.
+  \item A Supabase Edge Function (\texttt{smart-invite-user}) dispatches the invite email to the prospective member using the Supabase \texttt{invite\_user.html} template.
+\end{enumerate}
+
+\subsection{Order Management}
+The Order Management module provides administrators with a comprehensive interface within the Medusa Admin Portal to oversee and manage all transactions placed through the Adnexio platform. When a member completes a booking through the mobile application, the corresponding order record is automatically created and surfaced within this module as illustrated in Figure~\ref{fig:order-management-1} and Figure~\ref{fig:order-management-2}, giving the administrative team full visibility over all platform activity.
+
+\thesisfigure{ch4-order-management-1.png}{Adnexio Overview Order Screen in Medusa Admin Portal}{Adnexio Overview Order Screen in Medusa Admin Portal}{}{order-management-1}
+
+\thesisfigure{ch4-order-management-2.png}{Adnexio Order Management Screen in Medusa Admin Portal}{Adnexio Order Management Screen in Medusa Admin Portal}{}{order-management-2}
+
+Each order record exposes the following core information:
+\begin{itemize}
+  \item \textbf{Order Details:} The experience or itinerary purchased, along with the associated member account and booking metadata.
+  \item \textbf{Payment Status:} The current state of the transaction, reflecting whether the payment has been confirmed, is pending, or has failed.
+  \item \textbf{Order Status:} The fulfillment state of the booking, indicating whether the order is active, completed, or cancelled.
+\end{itemize}
+Administrators retain full control over order records and may perform management actions directly from within the portal, including the ability to manually cancel an order where necessary. Upon cancellation, the order status is automatically updated across the platform.
+
+\subsubsection{Refund Management}
+Refund requests submitted by members through the mobile application are surfaced in a dedicated Refunds tab within the Order Management module, isolating them from the general order list for streamlined administrative review. Each refund request is associated with its originating order and awaits manual review by an administrator.
+\thesisfigure{ch4-refund-management.png}{Adnexio Refund Management Screen in Medusa Admin Portal}{Adnexio Refund Management Screen in Medusa Admin Portal}{}{refund-management}
+
+\begin{itemize}
+  \item \textbf{Cancellation Integration Point.} The connection between the mobile client and the refund-management surface is the \texttt{cancelBookingItemV2} tRPC procedure (Section 4.4.6). When a user submits a cancellation from the My Bookings detail screen, the procedure posts to Medusa's \texttt{/store/orders/\{orderId\}/cancel} endpoint with the line item ID, reason, and customer name. Medusa responds with a \texttt{refund\_request} record in pending state, which immediately surfaces in the admin's pending cancellations tab for administrator review.
+  \item \textbf{Refund Execution.} The ``Approve with Refund'' and ``Approve without Refund'' actions in the admin are handled entirely within the Medusa backend. No Stripe refund invocation exists in this monorepo; if ``Approve with Refund'' initiates a Stripe refund, it does so from the Medusa backend's payment module rather than from the Next.js API.
+\end{itemize}
+
 \subsection{Sales Dashboard}
+The sales dashboard described in Section 3.13.3 is implemented as a Medusa admin extension in the separate backend repository. Figure~\ref{fig:sales-dashboard} shows the dashboard as rendered in the Medusa admin, with the Elite customer count, weekly bookings, and total weekly booked value surfaced as designed.
+
+\thesisfigure{ch4-sales-dashboard.png}{Sales dashboard in the Medusa admin}{Sales dashboard in the Medusa admin}{}{sales-dashboard}
+
+Because the metrics computation logic resides outside this monorepo, the week-over-week comparison logic and the dashboard's refresh behavior are evidenced through the admin screenshot rather than through in-repo code.
+
 \subsection{PlatinumList Extension}
+The PlatinumList synchronization extension is documented in Section 4.3.2. No additional admin-tool material is required here.
+
 \subsection{Notification System}
+The notification system spans this monorepo (for the transactional emails implemented directly in the Next.js API) and the Medusa backend (for order-placement and welcome emails). Table~\ref{tab:email-templates}
+inventories the five email templates present in this repository and their dispatch behavior.
+
+\input{tables/email-templates}
+
+All templates are dispatched via Resend, except the Membership Invite, which uses Supabase's native auth email delivery through the Edge Function.
+
 \section{AI Itinerary Builder Evaluation}
+To empirically ground the builder's value claim, a comparative user study was conducted against the manual booking flow.
+
 \subsection{Methodology}
+Five participants were instructed to plan a three-day "Romantic Anniversary" trip to Dubai. The trip planning task required specific inclusions for each day: one evening activity with a view, one luxury dinner, and one afternoon relaxation activity. Participants sequentially utilized two distinct planning methods: manual selection through the Explore tab and the AI builder using a natural-language prompt.
+
+Four quantitative metrics were recorded for each method: total completion time, incidence of scheduling conflicts, presence of human errors (incorrect date or price), and the number of prompt retries (applicable only to the AI method). Furthermore, participants provided a 1–10 rating for each method regarding ease of use, confidence, and perceived speed.
+\input{tables/ai-vs-manual-itinerary}
+
+The AI builder delivered an \textbf{87.8\% reduction in median completion time} and a \textbf{100\% reduction in scheduling conflicts} against the manual method, while raising perceived ease of use by \textbf{59\%}. The time advantage stems from processing all scenario constraints, dates, interest categories, pace, and pairing coherence in a single streamed response, whereas the manual method requires sequential discovery, filtering, and verification of each experience. The conflict-reduction advantage stems from scheduling against validated product variants with enforced time boundaries, which structurally precludes overlaps rather than discouraging them.
+
 \subsection{Feature Comparison Against AI Travel-Planning Platforms}
+Section 2.2 examines competitors in the luxury concierge space (Quintessentially, Velocity Black, John Paul Group), none of which offer a conversational AI itinerary builder comparable to Adnexio's. To position the platform against tools that do offer similar capability, two AI travel-planning platforms from the broader market were selected for feature comparison: 
+\input{tables/ai-itinerary-feature-comparison}
+
+The comparison confirms that Adnexio is not differentiated on the generative dimensions of AI itinerary planning all three platforms support conversational generation, structured day-by-day output, and real-time availability verification. Where Adnexio separates from the comparators is in the \textbf{structural integration between planning and booking}, and in the \textbf{curation layer underneath the AI.} Adnexio is the only platform in the comparison that allows the user to proceed from chat directly to checkout within a single interface; both Layla.ai and Booking.com require the user to cross-reference and book each experience through external channels once the itinerary is produced. Adnexio also grounds its recommendations in a curated, UAE-focused catalog of luxury experiences, whereas Layla.ai draws on open web content that may be inaccurate, outdated, or not bookable at the stated price, and Booking.com operates as an open marketplace without the luxury-tier curation that defines Adnexio's target segment.
+
+The remaining rows further reinforce the positioning. Pace-based density control and hyper-local UAE luxury curation are unique to Adnexio among the three platforms, both reflecting the design decision documented in Section 3.10.3 to treat the itinerary builder as a high-touch planning tool for a specific demographic rather than a general-purpose travel assistant. The capability gap is therefore not one of raw AI performance but of product scope: Adnexio is built end-to-end for a narrowly defined luxury-lifestyle use case, while the comparator platforms serve broader travel-planning needs through more generalized infrastructure.
