@@ -116,9 +116,45 @@ The Elite tier requires recurring subscription billing, which is implemented thr
 The payment router implements six procedures to support the subscription surface: \texttt{getUserSubscription} and \texttt{getSubscription} for reading current state, \texttt{createCustomerSession} for initiating the Stripe Pricing Table flow, \texttt{getEliteSubscriptionPrice} for resolving the correct price identifier, \texttt{cancelSubscription} for ending an active subscription, and \texttt{createPaymentIntent} for the one-time flow described above. A subscription record is persisted to the Supabase payments table with \texttt{type = "subscription"}, capturing the Stripe customer identifier, the Stripe subscription identifier, the billing interval, and the mirrored Stripe subscription status.
 
 \section{Product Inventory Implementation}
+The product inventory module realizes the design documented in Sections 3.8, 3.9, and the inventory-related parts of Section 3.13. A structural note is important before presenting the implementation detail: the Adnexio platform is delivered as two distinct repositories the consumer-facing monorepo (containing the mobile app, the Next.js API host, and the shared packages), and a separate Medusa backend repository that contains the commerce engine and its custom admin extensions. The authoring tools for internal experiences, the PlatinumList synchronization extension, and the category management UI are implemented within the Medusa backend repository. This subsection therefore documents the inventory module from two complementary perspectives: the authoring surface (evidenced through Medusa admin screenshots) and the consumption surface (evidenced through the mobile client's consumption logic, which resides in the monorepo documented in Chapter 4.1).
+
 \subsection{Internal Experience Management}
+Internal experiences are authored through a custom admin extension within the Medusa backend, and are consumed by the mobile client as standard Medusa products carrying typed variants and metadata fields. This subsection documents both sides of that boundary.
+
 \subsubsection{Authoring Surface}
+The admin authoring form realizes the metadata schema described in Section 3.9.2. Administrators create internal experiences by filling in a structured form that captures basic information (event title, location, event date, end date), pricing configuration (base price, currency, availability, max capacity), operational constraints (duration, age restriction, weight limit), and policy text (terms and conditions, refund policy). Figure~\ref{fig:authoring-surface-1} and Figure~\ref{fig:authoring-surface-2} show the admin metadata form as it appears to the authoring user.
+
+\thesisfigure{ch4-authoring-surface-1.png}{Internal experience metadata in Medusa admin (1)}{Internal experience metadata in Medusa admin (1)}{}{authoring-surface-1}
+
+\thesisfigure{ch4-authoring-surface-2.png}{Internal experience metadata in Medusa admin (2)}{Internal experience metadata in Medusa admin (2)}{}{authoring-surface-2}
+
+Two distinct pricing models are supported. The \textbf{per-event model} uses a bulk date-range generator that accepts a start date, an end date, a set of default time slots with associated capacities, and a global ticket type catalog (e.g., "Standard Admission", "Ultimate Express"). When the administrator saves, the backend pre-generates a product variant for each combination of (date, time slot, ticket type) a pattern confirmed by the mobile client's variant-grouping logic, which re-groups these pre-generated variants by date and time slot at render time. Figure~\ref{fig:authoring-surface-3} shows the per-event configuration form with the date range generator and ticket type definitions.
+
+\thesisfigure{ch4-authoring-surface-3.png}{Per-event pricing and ticket-type configuration}{Per-event pricing and ticket-type configuration}{}{authoring-surface-3}
+
+The \textbf{rental model} is used for asset-based services such as car rentals. The administrator configures three pricing tiers daily, weekly, and monthly and the backend auto-generates three corresponding seat-category variants upon save. The rental start window is also specified at authoring time to constrain the date range within which users may initiate a rental. Figure~\ref{fig:authoring-surface-4} shows the rental configuration form.
+
+\thesisfigure{ch4-authoring-surface-4.png}{Rental pricing tier configuration}{Rental pricing tier configuration}{}{authoring-surface-4}
+
 \subsubsection{Consumption Surface}
+On the mobile side, internal experiences surface through the same product rendering pipeline used for all catalog items. The mobile client reads the following metadata fields from the product record and uses them to shape the user interface:
+
+\begin{itemize}
+  \item \texttt{pricing\_model}: distinguishes per-event experiences from rentals, driving which booking configuration is rendered.
+  \item \texttt{rental\_pricing}: exposes the three-tier price structure for rental experiences.
+  \item \texttt{duration\_hours}, \texttt{venue}, \texttt{max\_capacity}, \texttt{age\_restriction}, \texttt{weight\_limit}, \texttt{additional\_restrictions}: rendered as supporting detail on the experience detail screen.
+  \item \texttt{is\_sold\_out}: controls availability on the date picker; when true, the corresponding date slot is rendered as disabled.
+  \item \texttt{terms\_text}: conditionally rendered as the mandatory acceptance block on the detail screen.
+\end{itemize}
+
+The experience title, base date fields, and starting price are consumed from standard Medusa product and variant fields rather than from metadata.
+
+\textbf{Variant Modeling.} Each product variant is uniquely identified by a (show-time identifier, seat category) combination, with \texttt{show\_time\_start}, \texttt{show\_time\_end}, and \texttt{show\_time\_id} stored in variant metadata. The mobile client's \texttt{groupTimesByDate} logic reads these fields to reconstruct the date-grouped time slot picker at render time, which is how the pre-generated variants produced by the authoring form surface back to the user as a coherent date-and-time selection interface.
+
+\textbf{Rental Duration-to-Tier Mapping.} The mobile booking screen for rental experiences implements the tier-selection rule directly: durations under seven days apply the daily tier, durations between seven and twenty-nine days apply the weekly tier, and durations of thirty days or longer apply the monthly tier. The selected tier is matched to the appropriate product variant by seat category name, and the client updates the displayed price accordingly as the user adjusts the start and end dates.
+
+\textbf{Terms Acceptance Gate.} The terms-acceptance gate described in Section 3.11.1 is fully implemented. When an experience's metadata includes a non-empty \texttt{terms\_text} field, the primary action button on the detail screen is disabled and its label reads ``accept terms to continue'' until the user checks the acceptance box. Once accepted, the button becomes active and its label transitions to the standard booking action.
+
 \subsection{PlatinumList Synchronization}
 \subsubsection{Product Sync (Medusa Backend Extension)}
 \subsection{Category and Tag Configuration}
