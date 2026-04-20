@@ -156,13 +156,47 @@ The experience title, base date fields, and starting price are consumed from sta
 \textbf{Terms Acceptance Gate.} The terms-acceptance gate described in Section 3.11.1 is fully implemented. When an experience's metadata includes a non-empty \texttt{terms\_text} field, the primary action button on the detail screen is disabled and its label reads ``accept terms to continue'' until the user checks the acceptance box. Once accepted, the button becomes active and its label transitions to the standard booking action.
 
 \subsection{PlatinumList Synchronization}
+PlatinumList synchronization comprises two distinct integrations in the platform, which are documented separately to accurately reflect where each integration lives.
+
 \subsubsection{Product Sync (Medusa Backend Extension)}
+The core synchronization pipeline described in Section 3.8 fetching event data from the PlatinumList API, transforming it into the platform's product schema, and seeding it into the Medusa catalog is implemented as a custom Medusa admin extension within the separate backend repository. From the perspective of the mobile client and the Next.js API host, PlatinumList-sourced products are indistinguishable from internally authored products except for a \texttt{PL:} prefix on their handle or SKU, which the mobile checkout flow uses to route payment appropriately (discussed below).
+
+The admin extension realizes the manual-sync design choice documented in Section 3.13.4: an administrator initiates synchronization explicitly through the PlatinumList Events page in the Medusa admin, and the extension surfaces a success or failure indicator upon completion. Figure~\ref{fig:product-sync} shows the admin extension interface as rendered in the Medusa admin portal.
+
+\thesisfigure{ch4-product-sync.png}{PlatinumList sync extension in the Medusa admin}{PlatinumList sync extension in the Medusa admin}{}{product-sync}
+
 \subsection{Category and Tag Configuration}
+Categories and tags are authored through the Medusa admin and consumed by the mobile client at runtime. This subsection documents both the canonical source of the classification data and how the mobile client renders it.
+
 \subsubsection{Category Authoring and Hierarchy}
+The canonical list of categories is maintained within the Medusa backend, with no categories seeded from within this monorepo. Each category record carries a \texttt{metadata.image\_url} field that holds the cover image URL used for visual rendering on the mobile Explore tab, with a fallback image used where no URL is present.
+
+The Medusa query used by the mobile client includes the full descendant tree of each category (\texttt{include\_descendants\_tree: true}), but the mobile client renders only leaf categories, grouped visually under their parent. In other words, although the category hierarchy supports arbitrary depth in theory, the current rendering pattern treats it as a two-level structure for navigation purposes. Figure~\ref{fig:category-authoring-and-hierarchy} shows the Medusa admin categories page on the authoring side and the corresponding mobile Explore tab rendering on the consumption side.
+
+\thesisfigure{ch4-category-authoring-and-hierarchy.png}{Category authoring and consumption}{Category authoring and consumption. \\ (a) Medusa admin categories page showing the configured category list with cover images. \\ (b) Mobile Explore tab rendering the same categories as visual tiles.}{}{category-authoring-and-hierarchy}
+
 \subsubsection{Tag Authoring and Rendering}
+Tags are maintained under the Settings > Product Tags section of the Medusa admin. The mobile client fetches the full tag list at runtime with pagination set to fifty tags per page, which is comfortably above the current tag count. Tags are rendered as horizontal filter chips below the search bar on the Explore tab, with the client-injected "all" chip serving as the default selected state. Figure~\ref{fig:tag-authoring-and-rendering} shows the Medusa admin tag list on the authoring side and the rendered filter chip row on the consumption side.
+\thesisfigure{ch4-tag-authoring-and-rendering.png}{Tag authoring and consumption}{Tag authoring and consumption. \\ (a) Medusa admin Settings > Product Tags page showing the configured tag list. \\ (b) Mobile Explore tab rendering the same tags as horizontal filter chips below the search bar.}{}{tag-authoring-and-rendering}
+
 \subsubsection{Product Count Rendering}
+The mobile Explore tab renders a product count on each category tile to indicate how many experiences the user will find within that category. The count is fetched through the getCategoryProductCounts procedure, which queries the number of products directly assigned to each category identifier. Categories with zero products are hidden from the Explore grid entirely, ensuring users are not led into empty category listings.
+
+A technical note is worth recording: the count reflects direct category assignments only and does not roll up child-category counts into their parent. A parent category whose products are all assigned to its children would therefore show a count of zero even if its subtree contains many experiences.
+
 \section{Booking Flow Implementation}
+The booking flow module realizes the five-stage user journey documented in Section 3.12, along with the booking-management surface that follows a completed transaction. The flow is implemented across the mobile client, the tRPC router, and the Medusa commerce backend, and is the primary revenue path of the platform. This subsection documents each stage in the implemented order: detail, configuration, cart, checkout, confirmation, and post-transaction booking management.
+
 \subsection{Experience Detail Screen}
+The experience detail screen serves as the first stage of the booking journey and consolidates all information required for the user to make a booking decision into a single consolidated view. Figure~\ref{fig:experience-detail-screen} shows the detail screen as rendered for a representative internal experience.
+\thesisfigure{ch4-experience-detail-screen.png}{Experience detail screen}{Experience detail screen}{}{experience-detail-screen}
+
+\noindent\textbf{Content Rendering.} The screen renders the experience title, starting price, location, duration, capacity, age and weight restrictions, transport arrangements, and a rich description block. The image carousel is implemented using a horizontally scrollable list with ten-second auto-play and pagination dots, and tapping an image opens a full-screen image viewer for closer inspection.
+
+\textbf{Terms and Conditions Gate.} As documented in Section 4.3.1.2, the primary action button is disabled and labeled "accept terms to continue" until the user explicitly checks the terms acceptance box, for any experience carrying a non-empty \texttt{terms\_text} metadata field. Only after acceptance does the button become active and transition to the standard booking action label.
+
+\textbf{Contact Lifestyle Assistant.} A secondary action button on the detail screen allows users to contact the lifestyle assistant directly. The behavior is tier-aware: Elite users are routed into WhatsApp through a deep link for direct concierge contact, while non-Elite users are routed to an email-based support channel via a \texttt{mailto:} handler targeting the platform's support address. Toast feedback confirms the action on press.
+
 \subsection{Date, Time, and Ticket Selection}
 \subsection{Cart}
 \subsection{Checkout}
