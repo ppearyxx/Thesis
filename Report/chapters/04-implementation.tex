@@ -198,9 +198,70 @@ The experience detail screen serves as the first stage of the booking journey an
 \textbf{Contact Lifestyle Assistant.} A secondary action button on the detail screen allows users to contact the lifestyle assistant directly. The behavior is tier-aware: Elite users are routed into WhatsApp through a deep link for direct concierge contact, while non-Elite users are routed to an email-based support channel via a \texttt{mailto:} handler targeting the platform's support address. Toast feedback confirms the action on press.
 
 \subsection{Date, Time, and Ticket Selection}
+The configuration stage adapts dynamically to the experience's pricing model, rendering one of the three configurations designed in Section 3.12.1. The variant-grouping logic that underpins this adaptive rendering is documented in Section 4.3.1.2.
+
+\textbf{Dynamic Ticket Categories.} Rather than hard-coding ticket categories, the booking screen extracts the available seat categories directly from the product's variant metadata at render time. The TicketSelector component maps over the filtered set of available categories, rendering one row per category with its own quantity selector and price. This allows the same booking screen to render 
+
+\begin{itemize}
+  \item "Adult / Children" for a show-time experience
+  \item "General Admission / VIP Express" for a per-event experience
+  \item "Daily / Weekly / Monthly" for a rental 
+\end{itemize}
+This rendering without any configuration-specific conditional logic on the mobile client. Figure~\ref{fig:date-time-and-ticket-selection} shows the three configurations as rendered for representative experiences.
+\thesisfigure{ch4-date-time-and-ticket-selection.png}{Date, time, and ticket selection}{Date, time, and ticket selection for (a) open-dates (b) show-time and (c) rental experiences}{}{date-time-and-ticket-selection}
+
 \subsection{Cart}
+The cart is a persistent, multi-item structure that retains added experiences across the session and across app restarts. Figure~\ref{fig:cart} shows the cart screen with a representative multi-item booking.
+
+\thesisfigure{ch4-cart.png}{Cart screen showing multi-item booking with reservation timer}{Cart screen showing multi-item booking with reservation timer}{}{cart}
+
+The cart implementation has three key characteristics:
+\begin{enumerate}
+  \item \textbf{Persistent identity.} The cart identifier is stored in the device's asynchronous storage under a namespaced key. A user who closes and reopens the application returns to the same cart with the same held items, rather than losing state on every app lifecycle event.
+  \item \textbf{Multi-item composition.} The cart is structured as a typed array of line items, each carrying its own metadata payload booking date, guest count per category, and special requests. Users may compose a trip of several experiences and check out in a single transaction, as designed in Section 3.12.1.
+  \item \textbf{Reservation timer.} A fifteen-minute countdown begins when the first item is added to the cart:
+  \begin{enumerate}
+    \item The timer ticks once per second and renders prominently at the top of the cart screen.
+    \item On expiry, the cart is cleared, a new empty cart is provisioned, and a toast notifies the user that items have been released.
+    \item The timer's start timestamp is persisted per cart, so the countdown survives app restarts a user who reopens with three minutes remaining sees three minutes remaining, not a reset clock.
+  \end{enumerate}
+\end{enumerate}
+
 \subsection{Checkout}
+The checkout screen is the intermediate review step between the cart and the Stripe PaymentSheet, implementing the design rationale documented in Section 3.12.1. 
+The checkout screen has two responsibilities:
+\begin{enumerate}
+  \item \textbf{Review surface.} Before committing to payment, the screen presents:
+  \begin{itemize}
+    \item A consolidated summary of all line items with unit prices, quantities, configured dates, and captured special requests.
+    \item A security disclosure confirming that card details are encrypted and not stored on the platform.
+    \item A "browse more experiences" link allowing the user to return to the Explore tab.
+    \item A Stripe trust indicator at the foot of the summary.
+  \end{itemize}
+  \item \textbf{Payment initiation.} Tapping the "Pay" button triggers the payment flow documented in Section 4.2.3.1  the cart is split by payment type, a Medusa payment collection is created, and the Stripe PaymentSheet is initialized and presented. Detailed payment architecture is documented there rather than duplicated here.
+\end{enumerate}
+
 \subsection{Confirmation}
+The confirmation stage communicates the outcome of the transaction and provides navigation actions for continuing on the platform. Figure~\ref{fig:confirmation} shows the confirmation screen as presented after a successful booking.
+
+\thesisfigure{ch4-confirmation.png}{Order confirmation screen}{Order confirmation screen}{}{confirmation}
+
+The confirmation stage is composed of three elements:
+
+\begin{enumerate}
+  \item \textbf{Success presentation.} On successful payment, the user is routed to a dedicated confirmation screen containing:
+    \begin{itemize}
+      \item A success badge and status title (either ``payment successful'' or ``reservation successful'' depending on the order type).
+      \item A booking summary enumerating the purchased line items.
+      \item A notice confirming that a confirmation email has been dispatched.
+      \item Two navigation actions: ``continue browsing'' (returns to Explore) and ``view my bookings'' (routes to My Bookings).
+    \end{itemize}
+
+  \item \textbf{Confirmation email dispatch.} Order-placement emails are dispatched through the Medusa backend's notification system (triggered by \texttt{order.placed} events), not through this monorepo's Resend integration. The Resend integration handles a dedicated subset of transactional emails --- subscription cancellation, booking cancellation, and the Elite welcome email. This split reflects the architectural boundary between the commerce engine (order lifecycle) and the application layer (user-account and subscription events).
+
+  \item \textbf{Failure handling.} Payment failures are rendered inline within the Stripe PaymentSheet itself rather than surfaced through a dedicated failure screen, allowing the user to correct their input and reattempt payment without losing context. This is a deliberate design choice documented in Section 3.12.1 and is visible in Figure~\ref{fig:confirmation} from Section 4.2.3.1.
+\end{enumerate}
+
 \subsection{My Bookings}
 \section{AI Itinerary Builder Implementation}
 \subsection{Session Entry and Conversational Flow}
