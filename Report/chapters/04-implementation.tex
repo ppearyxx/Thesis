@@ -263,6 +263,45 @@ The confirmation stage is composed of three elements:
 \end{enumerate}
 
 \subsection{My Bookings}
+\thesisfigure{ch4-my-bookings-1.png}{My Bookings tab with upcoming, past, and awaiting confirmation tabs}{My Bookings tab with upcoming, past, and awaiting confirmation tabs}{}{my-bookings-1}
+The booking-management surface has five key characteristics:
+
+\begin{enumerate}
+  \item \textbf{Tab structure with derived status.} Bookings are organized into three tabs --- Upcoming, Past, and Awaiting Confirmation --- with status derived client-side from the booking's underlying data:
+    \begin{itemize}
+      \item If the end date has elapsed $\rightarrow$ Past.
+      \item If the order status is \texttt{pending} $\rightarrow$ Awaiting Confirmation.
+      \item If the order status is \texttt{completed} with a future end date $\rightarrow$ Upcoming.
+    \end{itemize}
+
+  \item \textbf{Booking card.} Each card renders a consistent set of fields: experience title, location, configured date range, booking number, guest count, and a status badge. Where applicable, two additional indicators are rendered:
+    \begin{itemize}
+      \item The linked itinerary name, prefixed ``Part of `\ldots' itinerary'', where the booking was made as part of an itinerary bundle.
+      \item A pending cancellation flag, where the user has submitted a cancellation request that has not yet been processed.
+    \end{itemize}
+
+  \item \textbf{Pull-to-refresh.} The bookings list supports pull-to-refresh, invoking the underlying tRPC query's refetch mechanism. This is particularly important for the Awaiting Confirmation tab, where administrator actions drive resolution.
+
+  \item \textbf{Booking detail.} Tapping any card navigates to the Booking Detail screen, which surfaces the full booking context along with two user actions:
+    \begin{itemize}
+      \item \textbf{Add-to-calendar affordance} with native calendar integration. Using the Expo calendar module, it requests calendar permissions, then on iOS creates or resolves an Adnexio-branded calendar (falling back to the default calendar if creation is not permitted), or on Android writes to the user's primary writable calendar. The resulting calendar event carries the experience title, date range, location, and notes, followed by a success alert. Long-span rentals over thirty days are excluded from calendar write eligibility.
+      \item \textbf{Cancel booking action.}
+    \end{itemize}
+\end{enumerate}
+Figure~\ref{fig:my-bookings-2} shows the booking detail screen in its standard state and with a pending cancellation flag applied.
+\thesisfigure{ch4-my-bookings-2.png}{Booking detail screen}{Booking detail screen: (a) standard state, (b) with pending cancellation applied}{}{my-bookings-2}
+
+\begin{enumerate}
+  \setcounter{enumi}{4}
+  \item \textbf{Cancellation flow.} The cancel booking action opens a confirmation modal. On confirmation:
+    \begin{itemize}
+      \item The client invokes the \texttt{cancelBookingItem} tRPC mutation with the order and item identifiers.
+      \item The mutation targets Medusa's V2 cancellation endpoint, routing the cancellation to the administrative refund-management surface documented in Section 4.6.
+      \item A toast confirms that the cancellation request has been submitted for approval.
+      \item The local orders query is invalidated to refresh the list, and the booking detail screen updates to reflect the pending cancellation flag on subsequent load.
+    \end{itemize}
+\end{enumerate}
+
 \section{AI Itinerary Builder Implementation}
 \subsection{Session Entry and Conversational Flow}
 \subsection{Personalization Inputs and Tool-Driven Generation}
