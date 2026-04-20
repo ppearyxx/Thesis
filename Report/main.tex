@@ -75,7 +75,7 @@
 \newcommand{\thesisfigure}[5]{%
   \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{#1}
+    \includegraphics[width=0.8\textwidth, height=0.5\textheight, keepaspectratio]{#1}
     \captionsetup{justification=centering}
     \caption[#2]{#3\ifx&#4&\else~\cite{#4}\fi}
     \label{fig:#5}
@@ -142,7 +142,7 @@
 \bibliography{bibliography/string,bibliography/cpe}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Appendices %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\input{chapters/appendix-a}
+% \input{chapters/appendix-a}
 %\input{chapters/appendix2}
 
 \end{document}
