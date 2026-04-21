@@ -62,7 +62,7 @@ The deployment pipeline is delineated into two automated tracks:
     \item \textbf{The Admin Track} The lower track manages the Admin Repository, which is isolated from client-side dependencies. Updates trigger a deployment to Render, which hosts the backend infrastructure (MedusaJS). Similar to the application track, this workflow enforces a "DB Migration" step against the underlying PostgreSQL database to ensure data integrity prior to updating the live Admin Portal.
 \end{enumerate}
 \section{User Roles \& Permissions}
-\label{section:User Roles \& Permissions}
+\label{section:user-roles-permissions}
 \input{tables/user-roles}
 In (Table~\ref{tab:user-roles}) User Roles \& Permissions, Adnexio platform employs a Role-Based Access Control (RBAC) model to manage user permissions and tailor the experience to different user types. The system defines four distinct roles Guest, Essential, Elite, and Administrator each with a specific set of capabilities and access levels designed to serve their unique needs within the platform's ecosystem.
 
