@@ -35,14 +35,14 @@ The diagram also introduces our approach to Domain-Driven Design (DDD), which or
 Based on the system architecture diagram (Figure~\ref{fig:system-architecture-design}) , the platform's core architecture can be broken down into three main areas: Applications, Admin Stack, and Infrastructure. Each area contains specialized services that work together to deliver a seamless and robust user experience.
 The Applications layer serves as the primary entry point for our members. It consists of two native mobile apps, one for iOS and one for Android, which are responsible for the entire user-facing experience. These applications handle fetching all necessary data for browsing experiences and submitting booking requests to our backend. To simplify development and ensure consistency, both apps communicate exclusively with a central Next.js API Host. This API serves as a dedicated gateway for the mobile applications, simplifying the client-side logic by taking in straightforward requests and then handling the complex task of communicating with multiple backend services to fulfill them.
 The Infrastructure layer is the core of our service delivery, containing all the backend services that power the platform. When a request is made from the mobile app, the Next.js API first validates the user's session and permissions with our Auth service, which handles Role-Based Access Control (RBAC). All core business data, such as user information, booking details, and preferences, is stored and managed in our Postgres Database. For payments, the API integrates with Stripe Payments to create payment intents and securely process transactions. Upon successful payment, Stripe sends webhook updates back to our database to confirm the transaction. To enhance personalization, the API also communicates with GPT-4o to perform AI-driven actions, such as generating tailored experience recommendations for users. Finally, our Email service is triggered by events like new bookings or successful payments to send out notifications, receipts, and alerts to members.
-The Admin Stack is a separate but vital component for managing the platform's operations. Internal teams use the Medusa Admin Dashboard to perform a variety of administrative actions, including customer management and experience curation. The dashboard interacts with the Medusa.js API, which functions as our core e-commerce engine. A key feature of this stack is its ability to create a diverse marketplace; the Medusa.js API manages both our own first-party experiences and integrates with external Vendor APIs, such as PlatinumList and SevenRooms, to syndicate and manage third-party offerings.
+The Admin Stack is a separate but vital component for managing the platform's operations. Internal teams use the Medusa Admin Dashboard to perform a variety of administrative actions, including customer management and experience curation. The dashboard interacts with the MedusaJS API, which functions as our core e-commerce engine. A key feature of this stack is its ability to create a diverse marketplace; the MedusaJS API manages both our own first-party experiences and integrates with external Vendor APIs, such as PlatinumList and SevenRooms, to syndicate and manage third-party offerings.
 \subsection{Medusa's Architecture}
 \thesisfigure{ch3-medusa-architecture.png}{Medusa's Architecture}{Medusa's         
   Architecture}{}{medusa-architecture} 
 While (Figure~\ref{fig:system-architecture-design}), outlines the high-level service interactions,  (Figure~\ref{fig:medusa-architecture}) provides a microscopic view of the internal architecture of the Medusa backend itself. The system enforces a strict vertical decomposition, separating the request lifecycle into three functional layers to ensure modularity and scalability.
 \begin{enumerate}
     \item The HTTP Layer (Ingress \& Session Management) The top-most layer functions as the exclusive ingress point for external consumers, specifically the Storefront and Admin applications. Incoming requests are handled via API Routes, which sanitize input and manage authentication states. As indicated by the lateral connection in the diagram, this layer offloads session management to an external Redis instance, ensuring the API server remains stateless and performant under load.
-    \item The Workflows Layer (Business Logic Orchestration) Situated below the HTTP interface is the Workflows layer. Utilizing the Workflows SDK, this layer abstracts complex business logic away from the API routes. It acts as an orchestration engine, coordinating multi-step operations (such as "Complete Order" or "Process Return") to ensure transactional integrity before passing data down to the domain modules.
+    \item The Workflows Layer (Business Logic Orchestration) Situated below the HTTP interface is the Workflows layer. Utilizing the Workflows SDK, this layer abstracts complex business logic away from the API routes. It acts as an orchestration engine, coordinating multi-step operations (such as ``Complete Order'' or ``Process Return'') to ensure transactional integrity before passing data down to the domain modules.
     \item The Module Layer (Domain Isolation) The foundation of the architecture is the Modules layer, which encapsulates specific data models and utilities. This layer is bifurcated into\textbf{ two distinct categories:}
     \begin{itemize}
         \item Commerce Modules: These modules manage the core e-commerce domains. As illustrated by the icons in the diagram, specific modules are dedicated to Product Management, Cart Operations, Customer Profiles, and Pricing Strategies. Each module operates in isolation, preventing domain coupling.
@@ -57,9 +57,9 @@ The deployment pipeline is delineated into two automated tracks:
     \item \textbf{The Application Track (Monorepo)} The upper track orchestrates the consumer-facing components, leveraging a monorepo structure to centralize both mobile and web logic. A commit to this repository triggers concurrent workflows:
     \begin{itemize}
         \item \textbf{Mobile Application Build (Expo):} The pipeline integrates with Expo Application Services (EAS) to compile source code into native binaries, automating the submission process to the Apple App Store (iOS) and Google Play Store (Android).
-        \item \textbf{API Deployment \& Data Sync (Vercel \& Supabase):} Simultaneously, the serverless API (Next.js) is deployed via Vercel. Notably, the pipeline executes a "Run Migrations" step against the Supabase instance, ensuring the database schema is synchronized with the new application code before the Public API serves live traffic.
+        \item \textbf{API Deployment \& Data Sync (Vercel \& Supabase):} Simultaneously, the serverless API (Next.js) is deployed via Vercel. Notably, the pipeline executes a ``Run Migrations'' step against the Supabase instance, ensuring the database schema is synchronized with the new application code before the Public API serves live traffic.
     \end{itemize}
-    \item \textbf{The Admin Track} The lower track manages the Admin Repository, which is isolated from client-side dependencies. Updates trigger a deployment to Render, which hosts the backend infrastructure (MedusaJS). Similar to the application track, this workflow enforces a "DB Migration" step against the underlying PostgreSQL database to ensure data integrity prior to updating the live Admin Portal.
+    \item \textbf{The Admin Track} The lower track manages the Admin Repository, which is isolated from client-side dependencies. Updates trigger a deployment to Render, which hosts the backend infrastructure (MedusaJS). Similar to the application track, this workflow enforces a ``DB Migration'' step against the underlying PostgreSQL database to ensure data integrity prior to updating the live Admin Portal.
 \end{enumerate}
 \section{User Roles \& Permissions}
 \label{section:user-roles-permissions}
@@ -88,9 +88,9 @@ The Guest flow enables rapid, frictionless platform exploration, allowing prospe
 
 \textbf{Process Flow:}
 \begin{enumerate}
-    \item Session Initiation: The mobile application (Expo App) establishes an anonymous session by invoking signInAnonymously() through the Supabase client SDK.
+    \item Session Initiation: The mobile application (Expo App) establishes an anonymous session by invoking \texttt{signInAnonymously()} through the Supabase client SDK.
     \item Authentication and Token Generation: Supabase Auth provisions an ephemeral user record and issues a JSON Web Token (JWT) for session management.
-    \item Client-Side Session Management: The JWT is securely persisted on the client device, granting temporary, read-only access to the Browsing Domain. This restricted access state corresponds to users who select "Continue as Guest" on the application's welcome screen.
+    \item Client-Side Session Management: The JWT is securely persisted on the client device, granting temporary, read-only access to the Browsing Domain. This restricted access state corresponds to users who select ``Continue as Guest'' on the application's welcome screen.
 \end{enumerate}
 
 \subsection{Essential User Flow (Standard Registration)}
@@ -98,9 +98,9 @@ The Guest flow enables rapid, frictionless platform exploration, allowing prospe
 The Essential tier represents the platform's standard registration pathway, providing authenticated users with permanent access to core platform functionality through a self-service onboarding process. \\
 \textbf{Process Flow:}
 \begin{enumerate}
-    \item Registration Initiation: Users submit email credentials and a secure password through the mobile application interface, triggering a call to Supabase.signUp().
+    \item Registration Initiation: Users submit email credentials and a secure password through the mobile application interface, triggering a call to \texttt{Supabase.signUp()}.
     \item Email Verification: Supabase dispatches a verification email containing a unique confirmation link. This verification step validates user identity and mitigates fraudulent account creation.
-    \item Account Activation: Upon clicking the verification link, the user's authentication status is updated to "verified" within the Supabase authentication database.
+    \item Account Activation: Upon clicking the verification link, the user's authentication status is updated to ``verified'' within the Supabase authentication database.
     \item Profile Provisioning: The system automatically generates a corresponding user profile record with Essential role assignment, unlocking access to core features including experience booking and personalized recommendations.
 \end{enumerate}
 
@@ -108,8 +108,8 @@ The Essential tier represents the platform's standard registration pathway, prov
 Elite status represents a premium tier requiring application-based approval and subscription payment, processed through the Medusa e-commerce backend to ensure secure financial transaction handling. \\
 \textbf{Process Flow:}
 \begin{enumerate}
-    \item Upgrade Initiation: Authenticated Essential users request tier elevation by selecting "Upgrade to Elite" within the application interface.
-    \item Invitation Generation: The application triggers a Next.js API endpoint that interfaces with the Medusa API, specifically invoking the invite.createInvite service to manage subscription product logic and pricing tiers.
+    \item Upgrade Initiation: Authenticated Essential users request tier elevation by selecting ``Upgrade to Elite'' within the application interface.
+    \item Invitation Generation: The application triggers a Next.js API endpoint that interfaces with the Medusa API, specifically invoking the \texttt{invite.createInvite} service to manage subscription product logic and pricing tiers.
     \item Payment Processing: Medusa orchestrates the payment workflow through Stripe's payment gateway, collecting either annual or monthly recurring subscription charges as configured for Elite membership.
     \item Role Elevation: Upon successful payment confirmation via Stripe webhook, the user's role assignment in the Supabase database is automatically elevated to Elite status. This promotion grants immediate access to premium features including VIP experiences, priority booking privileges, and dedicated concierge services.
 \end{enumerate}
@@ -147,13 +147,13 @@ The user onboarding phase is a critical step in the Adnexio experience, designed
 For users residing in the UAE, the system collects data related to their consistent lifestyle and location, enabling location-specific and routine-based recommendations.
 \begin{itemize}
     \item Geographical Context: Collects the user's current area of residence in the UAE.
-    \item Routine Analysis: Gather information on the user's "typical week," establishing patterns for leisure time, work schedules, or common weekly activities.
+    \item Routine Analysis: Gather information on the user's ``typical week,'' establishing patterns for leisure time, work schedules, or common weekly activities.
 \end{itemize}
 \subsection{Visitor Onboarding Flow}
 For temporary visitors, the onboarding focuses on travel logistics and the purpose of the trip to deliver time-constrained and goal-oriented recommendations.
 \begin{itemize}
     \item Origin and Duration: Collects the user's country of origin and the start/end dates of their visit to the UAE. This defines the temporal window for all future itinerary and experience searches.
-    \item Trip Context: Determines the "type of trip" (e.g., business, leisure, family), which heavily influences the tone and nature of AI-generated recommendations.
+    \item Trip Context: Determines the ``type of trip'' (e.g., business, leisure, family), which heavily influences the tone and nature of AI-generated recommendations.
     \item Service Requirements: Documents any initial pre-arrival service needs, such as:
     \begin{itemize}
         \item Airport transfers.
@@ -170,7 +170,7 @@ Regardless of residency status, all users must define their core interests, diet
     \item \textbf{Dietary Preferences:} Users specify any mandatory dietary restrictions or requirements, including:
     \begin{itemize}
         \item Vegetarian, Vegan, Gluten-free, Dairy-free, Halal.
-        \item An "Other" field for unique or less common requirements.
+        \item An ``Other'' field for unique or less common requirements.
     \end{itemize}
     \item \textbf{Preferred Pace:} Users define their desired itinerary pace (e.g., Relaxed, Balanced, Packed), which sets a critical constraint for the GPT-4o model when constructing daily itineraries.
 \end{itemize}
@@ -232,7 +232,7 @@ While the experience details page relies on static content, the booking interfac
 
 Temporal Binding: The application parses the start timestamp from the availability payload to populate the native Date and Time Pickers. The system strictly enforces the \texttt{is\_sold\_out} flag; if this boolean is true, the corresponding date slots are visually disabled in the UI to prevent invalid selection.
 
-Dynamic Pricing \& Categories: Unlike hard-coded forms, the "Guest Details" section is generated dynamically. The application iterates through the tickets array to render the specific categories (e.g., "Adults", "Children") defined by the vendor.
+Dynamic Pricing \& Categories: Unlike hard-coded forms, the ``Guest Details'' section is generated dynamically. The application iterates through the tickets array to render the specific categories (e.g., ``Adults'', ``Children'') defined by the vendor.
 
 
 \section{Product Inventory}
@@ -261,7 +261,7 @@ The Adnexio platform supports two distinct itinerary creation modalities, design
 \subsection{Itinerary Types}
 \begin{enumerate}
     \item \textbf{Pre-Made Itineraries (Admin-Created):} Curated itinerary bundles created and published by the Adnexio administrative team. These are available to both Essential and Elite users and are discoverable through the Itinerary tab of the mobile application. Each pre-made itinerary is a structured, multi-day plan that groups a set of experiences into a single purchasable bundle.
-    \item \textbf{AI Itinerary Builder (Elite User-Created):} A personalized, conversational itinerary generation feature exclusive to Elite-tier users, powered by GPT-4o. Users interact with an in-app assistant named "George" to generate a bespoke itinerary based on their travel preferences, dates, and interests.
+    \item \textbf{AI Itinerary Builder (Elite User-Created):} A personalized, conversational itinerary generation feature exclusive to Elite-tier users, powered by GPT-4o. Users interact with an in-app assistant named ``George'' to generate a bespoke itinerary based on their travel preferences, dates, and interests.
 \end{enumerate}
 
 \subsection{Pre-Made Itinerary Design}
@@ -307,9 +307,9 @@ Tag-based filtering is designed as a secondary refinement layer over the default
 
 First, the system enforces a single-active-tag model. Selecting a new chip automatically deactivates any previously active tag. This prioritizes predictability over expressive power: users always know which single criterion is shaping their view, and the model for switching or clearing filters remains consistent.
 
-Second, filtered results are ranked by descending tag-match count. Because products may carry multiple tags, those sharing more tags with the user's active filter are treated as more contextually relevant and surfaced first. A user filtering by "wellness" should first encounter experiences that are most emphatically wellness-oriented, not experiences that merely happen to carry the tag.
+Second, filtered results are ranked by descending tag-match count. Because products may carry multiple tags, those sharing more tags with the user's active filter are treated as more contextually relevant and surfaced first. A user filtering by ``wellness'' should first encounter experiences that are most emphatically wellness-oriented, not experiences that merely happen to carry the tag.
 
-Third, the chip row includes "all" as an explicit reset state, treating the unfiltered view as a first-class filter value rather than the absence of filtering. This keeps the interaction pattern consistent across all chip selections.
+Third, the chip row includes ``all'' as an explicit reset state, treating the unfiltered view as a first-class filter value rather than the absence of filtering. This keeps the interaction pattern consistent across all chip selections.
 
 \subsection{Server-Side Search}
 The search bar is designed as a server-side operation rather than a client-side filter over cached data. Dispatching each query to the backend ensures results always reflect the live product catalog, including newly added experiences and freshly synced external inventory (Section~\ref{section:Integrate external experience to system}). This aligns with the platform's broader principle that the mobile application remains a thin presentation layer over an authoritative backend.

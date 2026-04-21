@@ -8,7 +8,7 @@ This chapter documents the practical realization of the design presented in Chap
 \label{subsection:Monorepo Structure}
 The repository follows a Turborepo layout with pnpm workspaces, organizing the codebase into three top-level directories: \texttt{apps/}, \texttt{packages/}, and \texttt{tooling/}. The structure is shown below:
 \thesisfigure{ch4-monorepo-structure.png}{Repository Folder Structure}{Repository Folder Structure}{}{monorepo-structure}
-This structure departs from the stock T3 Turbo reference layout in two deliberate ways. First, there are no Two structural decisions departing from the stock T3 Turbo layout. First, UI components are co-located within each app rather than shared through a ui package, because the mobile app (React Native) and the admin portal (Medusa's component system) do not share a rendering environment. Second, the admin application is excluded from the pnpm workspace and installed independently using npm (recorded as Architecture Decision Record 0002), because MedusaJS's dependency resolution expectations conflict with pnpm's strict workspace semantics.
+This structure departs from the stock T3 Turbo reference layout in two deliberate ways. First, UI components are co-located within each app rather than shared through a ui package, because the mobile app (React Native) and the admin portal (Medusa's component system) do not share a rendering environment. Second, the admin application is excluded from the pnpm workspace and installed independently using npm (recorded as Architecture Decision Record 0002), because MedusaJS's dependency resolution expectations conflict with pnpm's strict workspace semantics.
 
 \subsection{CI/CD Pipeline}
 The CI/CD pipeline is hosted on Bitbucket Pipelines and is structured as two tracks: a pull-request pipeline and a set of branch-and-tag-triggered deployment pipelines.
@@ -69,16 +69,16 @@ The authentication and authorization module is implemented on Supabase Auth, wit
 \subsubsection{Tier Routing and Entry Conditions}
 The routing logic at the application entry point distinguishes between user states and dispatches users to the appropriate post-authentication surface. Only users in the \texttt{PASSWORD\_SET\_NOT\_ONBOARDED} state reached by Elite users after their invitation has been accepted and their initial payment completed are routed into the onboarding flow. Essential users, already-onboarded Elite users, and Guest sessions are routed directly to the main browsing experience. This implementation confirms the design claim that onboarding is Elite-exclusive, with no Essential-tier onboarding path present in the codebase.
 
-The flow opens with an Elite welcome screen that introduces the purpose of onboarding and offers a "skip for now" affordance. Upon proceeding, the user is presented with the residency question resident or visitor which determines the branch of onboarding that follows. Figure~\ref{fig:tier-routing-and-entry-conditions-1} shows the Elite welcome screen and the residency selection step.
+The flow opens with an Elite welcome screen that introduces the purpose of onboarding and offers a ``skip for now'' affordance. Upon proceeding, the user is presented with the residency question resident or visitor which determines the branch of onboarding that follows. Figure~\ref{fig:tier-routing-and-entry-conditions-1} shows the Elite welcome screen and the residency selection step.
 \thesisfigure{ch4-tier-routing-and-entry-conditions-1.png}{Elite Onboarding Entry Point}{Elite Onboarding Entry Point \\ (a) welcome screen with ``start onboarding'' and ``skip for now'' options, (b) residency selection step}{}{tier-routing-and-entry-conditions-1}
 
 \subsubsection{Resident Branch}
-Users who select "resident" are presented with a two-step questionnaire focused on establishing their consistent lifestyle patterns within the UAE. Step 2 collects their area of residence, typical weekly routine, lifestyle priorities (e.g., dining, wellness, fitness, private events), types of assistance they seek from the platform, and planning preferences. Step 3 collects dietary needs, preferred communication method, and whether the user wishes to receive curated weekly suggestions. Figure~\ref{fig:resident-branch} shows the resident onboarding screens.
+Users who select ``resident'' are presented with a two-step questionnaire focused on establishing their consistent lifestyle patterns within the UAE. Step 2 collects their area of residence, typical weekly routine, lifestyle priorities (e.g., dining, wellness, fitness, private events), types of assistance they seek from the platform, and planning preferences. Step 3 collects dietary needs, preferred communication method, and whether the user wishes to receive curated weekly suggestions. Figure~\ref{fig:resident-branch} shows the resident onboarding screens.
 
 \thesisfigure{ch4-resident-branch.png}{Resident Onboarding Questionnaire}{Resident Onboarding Questionnaire \\ (a) step 2: location, typical week, lifestyle priorities, \\ (b) step 3: dietary, communication, weekly suggestions}{}{resident-branch}
 
 \subsubsection{Visitor Branch}
-Users who select "visitor" are presented with a structurally different questionnaire focused on trip logistics rather than routine. Step 2 collects the location and travel dates of their visit, their core interests (dining, wellness, culture, nature, VIP, sports, events, networking, private beaches), their preferred itinerary pace, and any pre-arrival services required (airport transfers, private driver, hotel booking, VIP event tickets, personal assistant). Step 3 collects dietary preferences and any additional requirements.
+Users who select ``visitor'' are presented with a structurally different questionnaire focused on trip logistics rather than routine. Step 2 collects the location and travel dates of their visit, their core interests (dining, wellness, culture, nature, VIP, sports, events, networking, private beaches), their preferred itinerary pace, and any pre-arrival services required (airport transfers, private driver, hotel booking, VIP event tickets, personal assistant). Step 3 collects dietary preferences and any additional requirements.
 
 The visitor branch differs from the resident branch not only in the questions asked but in the underlying data model captured. The two branches write distinct key sets under the \texttt{step\_data} JSONB column, reflecting the different temporal and contextual concerns of each user type. Figure~\ref{fig:visitor-branch} shows the visitor onboarding screens.
 
@@ -123,7 +123,7 @@ The admin authoring form realizes the metadata schema described in Section 3.9.2
 
 \thesisfigure{ch4-authoring-surface-2.png}{Internal experience metadata in Medusa admin (2)}{Internal experience metadata in Medusa admin (2)}{}{authoring-surface-2}
 
-Two distinct pricing models are supported. The \textbf{per-event model} uses a bulk date-range generator that accepts a start date, an end date, a set of default time slots with associated capacities, and a global ticket type catalog (e.g., "Standard Admission", "Ultimate Express"). When the administrator saves, the backend pre-generates a product variant for each combination of (date, time slot, ticket type) a pattern confirmed by the mobile client's variant-grouping logic, which re-groups these pre-generated variants by date and time slot at render time. Figure~\ref{fig:authoring-surface-3} shows the per-event configuration form with the date range generator and ticket type definitions.
+Two distinct pricing models are supported. The \textbf{per-event model} uses a bulk date-range generator that accepts a start date, an end date, a set of default time slots with associated capacities, and a global ticket type catalog (e.g., ``Standard Admission'', ``Ultimate Express''). When the administrator saves, the backend pre-generates a product variant for each combination of (date, time slot, ticket type) a pattern confirmed by the mobile client's variant-grouping logic, which re-groups these pre-generated variants by date and time slot at render time. Figure~\ref{fig:authoring-surface-3} shows the per-event configuration form with the date range generator and ticket type definitions.
 
 \thesisfigure{ch4-authoring-surface-3.png}{Per-event pricing and ticket-type configuration}{Per-event pricing and ticket-type configuration}{}{authoring-surface-3}
 
@@ -174,7 +174,7 @@ The Medusa query used by the mobile client includes the full descendant tree of 
 \thesisfigure{ch4-category-authoring-and-hierarchy.png}{Category authoring and consumption}{Category authoring and consumption. \\ (a) Medusa admin categories page showing the configured category list with cover images. \\ (b) Mobile Explore tab rendering the same categories as visual tiles.}{}{category-authoring-and-hierarchy}
 
 \subsubsection{Tag Authoring and Rendering}
-Tags are maintained under the Settings > Product Tags section of the Medusa admin. The mobile client fetches the full tag list at runtime with pagination set to fifty tags per page, which is comfortably above the current tag count. Tags are rendered as horizontal filter chips below the search bar on the Explore tab, with the client-injected "all" chip serving as the default selected state. Figure~\ref{fig:tag-authoring-and-rendering} shows the Medusa admin tag list on the authoring side and the rendered filter chip row on the consumption side.
+Tags are maintained under the Settings > Product Tags section of the Medusa admin. The mobile client fetches the full tag list at runtime with pagination set to fifty tags per page, which is comfortably above the current tag count. Tags are rendered as horizontal filter chips below the search bar on the Explore tab, with the client-injected ``all'' chip serving as the default selected state. Figure~\ref{fig:tag-authoring-and-rendering} shows the Medusa admin tag list on the authoring side and the rendered filter chip row on the consumption side.
 \thesisfigure{ch4-tag-authoring-and-rendering.png}{Tag authoring and consumption}{Tag authoring and consumption. \\ (a) Medusa admin Settings > Product Tags page showing the configured tag list. \\ (b) Mobile Explore tab rendering the same tags as horizontal filter chips below the search bar.}{}{tag-authoring-and-rendering}
 
 \subsubsection{Product Count Rendering}
@@ -191,7 +191,7 @@ The experience detail screen serves as the first stage of the booking journey an
 
 \noindent\textbf{Content Rendering.} The screen renders the experience title, starting price, location, duration, capacity, age and weight restrictions, transport arrangements, and a rich description block. The image carousel is implemented using a horizontally scrollable list with ten-second auto-play and pagination dots, and tapping an image opens a full-screen image viewer for closer inspection.
 
-\textbf{Terms and Conditions Gate.} As documented in Section~\ref{subsubsection:Consumption Surface}, the primary action button is disabled and labeled "accept terms to continue" until the user explicitly checks the terms acceptance box, for any experience carrying a non-empty \texttt{terms\_text} metadata field. Only after acceptance does the button become active and transition to the standard booking action label.
+\textbf{Terms and Conditions Gate.} As documented in Section~\ref{subsubsection:Consumption Surface}, the primary action button is disabled and labeled ``accept terms to continue'' until the user explicitly checks the terms acceptance box, for any experience carrying a non-empty \texttt{terms\_text} metadata field. Only after acceptance does the button become active and transition to the standard booking action label.
 
 \textbf{Contact Lifestyle Assistant.} A secondary action button on the detail screen allows users to contact the lifestyle assistant directly. The behavior is tier-aware: Elite users are routed into WhatsApp through a deep link for direct concierge contact, while non-Elite users are routed to an email-based support channel via a \texttt{mailto:} handler targeting the platform's support address. Toast feedback confirms the action on press.
 
@@ -201,9 +201,9 @@ The configuration stage adapts dynamically to the experience's pricing model, re
 \textbf{Dynamic Ticket Categories.} Rather than hard-coding ticket categories, the booking screen extracts the available seat categories directly from the product's variant metadata at render time. The TicketSelector component maps over the filtered set of available categories, rendering one row per category with its own quantity selector and price. This allows the same booking screen to render 
 
 \begin{itemize}
-  \item "Adult / Children" for a show-time experience
-  \item "General Admission / VIP Express" for a per-event experience
-  \item "Daily / Weekly / Monthly" for a rental 
+  \item ``Adult / Children'' for a show-time experience
+  \item ``General Admission / VIP Express'' for a per-event experience
+  \item ``Daily / Weekly / Monthly'' for a rental 
 \end{itemize}
 This rendering without any configuration-specific conditional logic on the mobile client. Figure~\ref{fig:date-time-and-ticket-selection} shows the three configurations as rendered for representative experiences.
 \thesisfigure{ch4-date-time-and-ticket-selection.png}{Date, time, and ticket selection}{Date, time, and ticket selection for (a) open-dates (b) show-time and (c) rental experiences}{}{date-time-and-ticket-selection}
@@ -234,10 +234,10 @@ The checkout screen has two responsibilities:
   \begin{itemize}
     \item A consolidated summary of all line items with unit prices, quantities, configured dates, and captured special requests.
     \item A security disclosure confirming that card details are encrypted and not stored on the platform.
-    \item A "browse more experiences" link allowing the user to return to the Explore tab.
+    \item A ``browse more experiences'' link allowing the user to return to the Explore tab.
     \item A Stripe trust indicator at the foot of the summary.
   \end{itemize}
-  \item \textbf{Payment initiation.} Tapping the "Pay" button triggers the payment flow documented in Section~\ref{subsubsection:One-Time Experience Purchases}. The cart is split by payment type, a Medusa payment collection is created, and the Stripe PaymentSheet is initialized and presented. Detailed payment architecture is documented there rather than duplicated here.
+  \item \textbf{Payment initiation.} Tapping the ``Pay'' button triggers the payment flow documented in Section~\ref{subsubsection:One-Time Experience Purchases}. The cart is split by payment type, a Medusa payment collection is created, and the Stripe PaymentSheet is initialized and presented. Detailed payment architecture is documented there rather than duplicated here.
 \end{enumerate}
 
 \subsection{Confirmation}
@@ -396,7 +396,7 @@ To empirically ground the builder's value claim, a comparative user study was co
 
 \subsection{Methodology}
 \label{subsection:Methodology}
-Five participants were instructed to plan a three-day "Romantic Anniversary" trip to Dubai. The trip planning task required specific inclusions for each day: one evening activity with a view, one luxury dinner, and one afternoon relaxation activity. Participants sequentially utilized two distinct planning methods: manual selection through the Explore tab and the AI builder using a natural-language prompt.
+Five participants were instructed to plan a three-day ``Romantic Anniversary'' trip to Dubai. The trip planning task required specific inclusions for each day: one evening activity with a view, one luxury dinner, and one afternoon relaxation activity. Participants sequentially utilized two distinct planning methods: manual selection through the Explore tab and the AI builder using a natural-language prompt.
 
 Four quantitative metrics were recorded for each method: total completion time, incidence of scheduling conflicts, presence of human errors (incorrect date or price), and the number of prompt retries (applicable only to the AI method). Furthermore, participants provided a 1–10 rating for each method regarding ease of use, confidence, and perceived speed.
 \input{tables/ai-vs-manual-itinerary}
