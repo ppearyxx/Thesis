@@ -23,12 +23,8 @@ Three deployment environments are defined — QA, UAT, and Production — each c
     \item \textbf{\texttt{prod/v*} tags} — require a manual confirmation step, then force-push to the \texttt{prod} branch, apply Supabase migrations to Production, and expose a manual EAS build trigger using the \texttt{production} profile.
 \end{itemize}
 
-\textcolor{red}{\textbf{TODO: Change Inline Ref}} \\
-
 Although Chapter 2 (Section~\ref{subsubsection:Git Flow}) introduces Git Flow as a reference branching methodology, the branching model used in practice is trunk-based development with tag-triggered environment promotions. All feature work merges into main through pull requests; main auto-deploys to QA; promotions to UAT and Production are performed by creating annotated Git tags (uat/v* and prod/v*), which the CI pipeline reacts to by force-pushing the tagged commit to the corresponding environment branch. The uat and prod branches therefore function as environment markers rather than merge targets, and are protected through Bitbucket branch restrictions that permit write access only to a dedicated deployment bot user.
-\thesisfigure{ch4-ci-cd-pipeline.png}{Bitbucket Pipelines Dashboard}{Bitbucket     
-  Pipelines Dashboard Showing a Mix of PR Audit Runs and Tag-Triggered Deployments to
-   QA/UAT/Production}{}{ci-cd-pipeline}
+\thesisfigure{ch4-ci-cd-pipeline.png}{Bitbucket Pipelines Dashboard}{Bitbucket Pipelines Dashboard Showing a Mix of PR Audit Runs and Tag-Triggered Deployments to QA/UAT/Production}{}{ci-cd-pipeline}
 
 
 \subsection{Environment Isolation}
@@ -102,7 +98,6 @@ The payment module realizes the architecture documented in Section~\ref{section:
 \label{subsubsection:One-Time Experience Purchases}
 One-time purchases support the checkout flow for users booking individual experiences. The implementation spans the mobile client, the tRPC payment router, the Medusa commerce backend, and Stripe's PaymentSheet SDK.
 
-\textcolor{red}{\textbf{TODO: Recheck}} \\
 The flow begins when a user proceeds from the cart to checkout. The \texttt{useCheckoutFlow} hook on the mobile client splits cart items into internal experiences (charged via Stripe) and external or free items (handled separately), then creates a Medusa payment collection and session representing the transaction. The hook then invokes the mobile Stripe SDK's \texttt{initPaymentSheet} followed by \texttt{presentPaymentSheet}, which renders the native Stripe payment UI for card collection. On successful payment, the client calls a \texttt{completeOrder} endpoint that in turn calls Medusa's \texttt{/store/carts/\{cartId\}/complete} to place the order. Figure~\ref{fig:one-time-experience-purchases} shows the PaymentSheet as rendered on iOS and Android, and  Figure~\ref{fig:order-confirmation-screen} shows the resulting order confirmation screen.
 
 

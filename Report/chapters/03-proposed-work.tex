@@ -426,7 +426,7 @@ Upon completion, the extension surfaces a \textbf{success or failure status indi
 The Notification system is designed to keep internal team members informed of key operational events across the platform. A foundational design decision is that notifications in this module are internal-only: they are dispatched exclusively to team recipients, not to platform users. User-facing transactional emails (such as booking confirmations) are handled separately through the payment and booking flows described in earlier sections.
 
 The system is triggered by a designed set of \textbf{four events}, each chosen because it requires administrative awareness or action:
-\textcolor{red}{\textbf{TODO: Change Inline Ref}}
+\textcolor{red}{\textbf{TODO: Recheck Section 3.13.1}} \\
 \begin{itemize}
     \item \textbf{New Membership Invite Created:} Triggered when a user submits an Elite membership request, whether as a new sign-up or an upgrade from Essential. The team needs to know because the request requires manual review under the approval flow described in Section 3.13.1.
     \item \textbf{Order Placed:} Triggered when a booking is confirmed for an internally managed experience. The team needs to know because internal experiences may require operational preparation (staffing, inventory allocation, vendor coordination) that is not handled automatically.
