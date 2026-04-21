@@ -5,6 +5,7 @@ This chapter documents the practical realization of the design presented in Chap
 \section{Development Environment Setup}
 
 \subsection{Monorepo Structure}
+\label{subsection:Monorepo Structure}
 The repository follows a Turborepo layout with pnpm workspaces, organizing the codebase into three top-level directories: \texttt{apps/}, \texttt{packages/}, and \texttt{tooling/}. The structure is shown below:
 \thesisfigure{ch4-monorepo-structure.png}{Repository Folder Structure}{Repository Folder Structure}{}{monorepo-structure}
 This structure departs from the stock T3 Turbo reference layout in two deliberate ways. First, there are no Two structural decisions departing from the stock T3 Turbo layout. First, UI components are co-located within each app rather than shared through a ui package, because the mobile app (React Native) and the admin portal (Medusa's component system) do not share a rendering environment. Second, the admin application is excluded from the pnpm workspace and installed independently using npm (recorded as Architecture Decision Record 0002), because MedusaJS's dependency resolution expectations conflict with pnpm's strict workspace semantics.
@@ -24,7 +25,7 @@ Three deployment environments are defined — QA, UAT, and Production — each c
 
 \textcolor{red}{\textbf{TODO: Change Inline Ref}} \\
 
-Although Chapter 2 (Section 2.1.9.2) introduces Git Flow as a reference branching methodology, the branching model used in practice is trunk-based development with tag-triggered environment promotions. All feature work merges into main through pull requests; main auto-deploys to QA; promotions to UAT and Production are performed by creating annotated Git tags (uat/v* and prod/v*), which the CI pipeline reacts to by force-pushing the tagged commit to the corresponding environment branch. The uat and prod branches therefore function as environment markers rather than merge targets, and are protected through Bitbucket branch restrictions that permit write access only to a dedicated deployment bot user.
+Although Chapter 2 (Section~\ref{subsubsection:Git Flow}) introduces Git Flow as a reference branching methodology, the branching model used in practice is trunk-based development with tag-triggered environment promotions. All feature work merges into main through pull requests; main auto-deploys to QA; promotions to UAT and Production are performed by creating annotated Git tags (uat/v* and prod/v*), which the CI pipeline reacts to by force-pushing the tagged commit to the corresponding environment branch. The uat and prod branches therefore function as environment markers rather than merge targets, and are protected through Bitbucket branch restrictions that permit write access only to a dedicated deployment bot user.
 \thesisfigure{ch4-ci-cd-pipeline.png}{Bitbucket Pipelines Dashboard}{Bitbucket     
   Pipelines Dashboard Showing a Mix of PR Audit Runs and Tag-Triggered Deployments to
    QA/UAT/Production}{}{ci-cd-pipeline}
@@ -48,17 +49,13 @@ Docker is used only as a local development dependency for running the Supabase s
 
 \section{Core Module Implementation}
 \subsection{Authentication and Authorization}
-The authentication and authorization module is implemented on Supabase Auth, with session validation handled in the tRPC middleware layer of the Next.js API. This module realizes the design documented in Sections 3.4 and 3.5.
+The authentication and authorization module is implemented on Supabase Auth, with session validation handled in the tRPC middleware layer of the Next.js API. This module realizes the design documented in Sections~\ref{section:User Registration Flow} and \ref{section:User Authentication and Authorization}.
 
-\textcolor{red}{\textbf{TODO: Change Inline Ref}} \\
-
-\textbf{Guest (Anonymous) Access.} The guest flow described in Section 3.4.1 is fully implemented. When a user taps "Continue as Guest" on the welcome screen, the application invokes supabase.auth.signInAnonymously() with the Guest role embedded as metadata on the created session. The user is then routed into the main browsing experience as an authenticated anonymous session. Guest users can browse the catalog and add items to the cart but cannot complete bookings or modify profile data, with these restrictions enforced through the role-permissions matrix described below. Figure~\ref{fig:authentication-and-authorization-1} shows the welcome screen and the resulting browsing experience available to guest users.
+\textbf{Guest (Anonymous) Access.} The guest flow described in Section~\ref{subsection:Guest User Flow (Anonymous Access)} is fully implemented. When a user taps "Continue as Guest" on the welcome screen, the application invokes supabase.auth.signInAnonymously() with the Guest role embedded as metadata on the created session. The user is then routed into the main browsing experience as an authenticated anonymous session. Guest users can browse the catalog and add items to the cart but cannot complete bookings or modify profile data, with these restrictions enforced through the role-permissions matrix described below. Figure~\ref{fig:authentication-and-authorization-1} shows the welcome screen and the resulting browsing experience available to guest users.
 \thesisfigure{ch4-authentication-and-authorization-1.png}{Guest Access Flow}{Guest 
   Access Flow \\ (a) welcome screen with ``continue as guest'' option, \\ (b) browse tab available to the anonymous session.}{}{authentication-and-authorization-1}
 
-  \textcolor{red}{\textbf{TODO: Change Inline Ref}} \\
-
-\textbf{Essential Registration and Email Verification.} Essential registration follows the flow designed in Section 3.4.2. Email confirmation is hard-enforced at the Supabase configuration level (\texttt{enable\_confirmations = true} in \texttt{supabase/config.toml}), which means no soft-nudge bypass is permitted: a newly registered user is routed to a dedicated verification screen and cannot reach the main applicFigure~\ref{fig:authentication-and-authorization-2}Figure~4.4 shows the sign-up screen, the email verification screen, and the verification email template delivered to the user.
+\textbf{Essential Registration and Email Verification.} Essential registration follows the flow designed in Section~\ref{section:User Registration Flow}. Email confirmation is hard-enforced at the Supabase configuration level (\texttt{enable\_confirmations = true} in \texttt{supabase/config.toml}), which means no soft-nudge bypass is permitted: a newly registered user is routed to a dedicated verification screen and cannot reach the main applicFigure~\ref{fig:authentication-and-authorization-2} shows the sign-up screen, the email verification screen, and the verification email template delivered to the user.
 \thesisfigure{ch4-authentication-and-authorization-2.png}{Essential Registration Flow}{Essential Registration Flow \\ (a) sign-up screen, \\ (b) email verification screen, \\ (c) verification email template}{}{authentication-and-authorization-2}
 
 \textbf{Password Reset.} A password reset flow is implemented using Supabase's native password recovery mechanism, with a custom email template rendered from \texttt{supabase/templates/reset\_password.html}. Figure~\ref{fig:authentication-and-authorization-3} shows the forgot-password and reset-password screens as they appear to the user.
@@ -67,13 +64,12 @@ The authentication and authorization module is implemented on Supabase Auth, wit
 
 \textbf{JWT Validation in the Next.js API.} Session validation is implemented as a tRPC middleware layer. Each incoming tRPC request carries a bearer token in its authorization header; the \texttt{createTRPCContext} function decodes the token via \texttt{supabase.auth.getUser()} and attaches the resolved user to the request context. The \texttt{protectedProcedure} wrapper then enforces the presence of a valid user on every procedure that requires authentication, rejecting unauthenticated requests before they reach any business logic. This arrangement centralizes the authentication gate in a single layer and eliminates the need for individual procedures to re-validate the session.
 
-\textbf{Role-Based Access Control.} The platform defines four roles through a numeric \texttt{ROLE\_ENUM}: Admin (1), Guest (2), Essential (3), and Elite (4), persisted relationally through a \texttt{roles} table joined to \texttt{users} via a \texttt{user\_roles} association table. Twenty-three discrete permissions are defined in a \texttt{permissions} table and linked to roles through \texttt{role\_permissions}. This relational structure allows permissions to be adjusted without schema changes and supports the tier-specific capabilities documented in Section~3.3.
+\textbf{Role-Based Access Control.} The platform defines four roles through a numeric \texttt{ROLE\_ENUM}: Admin (1), Guest (2), Essential (3), and Elite (4), persisted relationally through a \texttt{roles} table joined to \texttt{users} via a \texttt{user\_roles} association table. Twenty-three discrete permissions are defined in a \texttt{permissions} table and linked to roles through \texttt{role\_permissions}. This relational structure allows permissions to be adjusted without schema changes and supports the tier-specific capabilities documented in Section~\ref{section:User Roles \& Permissions}.
 
-\textcolor{red}{\textbf{TODO: Change Inline Ref}} \\
-
-\textbf{Row-Level Security.} The RLS design described in Section 3.5.2 is implemented selectively rather than uniformly. RLS policies are applied to four tables where user-scoped data isolation is most critical: \texttt{public\_images}, \texttt{private\_images}, \texttt{user\_roles}, and \texttt{onboarding\_stage}. For remaining tables (including \texttt{profile}, \texttt{roles}, \texttt{permissions}, \texttt{payments}, and itinerary-related tables), authorization is enforced in application code through the \texttt{protectedProcedure} wrapper combined with explicit ownership checks within individual tRPC procedures. This partial application of RLS reflects a pragmatic trade-off: tables where policy logic is straightforward and the security surface is sensitive receive RLS protection, while tables where policy expression would require complex joins or where access patterns are well-contained within application code are authorized at the application layer.
+\textbf{Row-Level Security.} The RLS design described in Section~\ref{subsection:Row-Level Security (RLS) Authorization} is implemented selectively rather than uniformly. RLS policies are applied to four tables where user-scoped data isolation is most critical: \texttt{public\_images}, \texttt{private\_images}, \texttt{user\_roles}, and \texttt{onboarding\_stage}. For remaining tables (including \texttt{profile}, \texttt{roles}, \texttt{permissions}, \texttt{payments}, and itinerary-related tables), authorization is enforced in application code through the \texttt{protectedProcedure} wrapper combined with explicit ownership checks within individual tRPC procedures. This partial application of RLS reflects a pragmatic trade-off: tables where policy logic is straightforward and the security surface is sensitive receive RLS protection, while tables where policy expression would require complex joins or where access patterns are well-contained within application code are authorized at the application layer.
 
 \subsection{User Onboarding and Personalization}
+\label{subsection:User Onboarding and Personalization Implementation}
 \subsubsection{Tier Routing and Entry Conditions}
 The routing logic at the application entry point distinguishes between user states and dispatches users to the appropriate post-authentication surface. Only users in the \texttt{PASSWORD\_SET\_NOT\_ONBOARDED} state reached by Elite users after their invitation has been accepted and their initial payment completed are routed into the onboarding flow. Essential users, already-onboarded Elite users, and Guest sessions are routed directly to the main browsing experience. This implementation confirms the design claim that onboarding is Elite-exclusive, with no Essential-tier onboarding path present in the codebase.
 
@@ -99,15 +95,17 @@ Onboarding responses are persisted to a single \texttt{onboarding\_stage} table 
 Onboarding completion is tracked through a dual-signal mechanism. When the user submits the final step, the \texttt{completeOnboarding} mutation sets \texttt{onboarding\_completed\_at} on the user's profile record and writes \texttt{completed\_at} on the \texttt{onboarding\_stage} row. The user's resolved state then evaluates to \texttt{ONBOARDED}, which routes subsequent sessions directly to the main application rather than back into the onboarding flow. Every step of the onboarding flow renders a progress bar showing the user's position within the three-step sequence (e.g., ``Step 2 of 3''), providing a clear sense of progression and remaining effort. Figure~\ref{fig:data-storage-and-completion} shows a representative \texttt{onboarding\_stage} row for an onboarded user.
 \thesisfigure{ch4-data-storage-and-completion.png}{Stored Onboarding Data in Supabase}{Stored Onboarding Data in Supabase}{}{data-storage-and-completion}
 \subsection{Payment System}
-\textcolor{red}{\textbf{TODO: Change Inline Ref}} \\
-The payment module realizes the architecture documented in Section 3.7, using Stripe as the payment provider and MedusaJS as the commerce backend for order placement. This subsection documents the implemented state of the module across three concerns: one-time experience purchases, Elite subscription billing, and the Elite approval workflow along with an honest inventory of gaps between the original design and the current implementation.
+
+The payment module realizes the architecture documented in Section~\ref{section:Payment System Architecture}, using Stripe as the payment provider and MedusaJS as the commerce backend for order placement. This subsection documents the implemented state of the module across three concerns: one-time experience purchases, Elite subscription billing, and the Elite approval workflow along with an honest inventory of gaps between the original design and the current implementation.
 
 \subsubsection{One-Time Experience Purchases}
+\label{subsubsection:One-Time Experience Purchases}
 One-time purchases support the checkout flow for users booking individual experiences. The implementation spans the mobile client, the tRPC payment router, the Medusa commerce backend, and Stripe's PaymentSheet SDK.
 
-\textcolor{red}{\textbf{TODO: Change Inline Ref ---> 4.10}} \\
+\textcolor{red}{\textbf{TODO: Recheck}} \\
+The flow begins when a user proceeds from the cart to checkout. The \texttt{useCheckoutFlow} hook on the mobile client splits cart items into internal experiences (charged via Stripe) and external or free items (handled separately), then creates a Medusa payment collection and session representing the transaction. The hook then invokes the mobile Stripe SDK's \texttt{initPaymentSheet} followed by \texttt{presentPaymentSheet}, which renders the native Stripe payment UI for card collection. On successful payment, the client calls a \texttt{completeOrder} endpoint that in turn calls Medusa's \texttt{/store/carts/\{cartId\}/complete} to place the order. Figure~\ref{fig:one-time-experience-purchases} shows the PaymentSheet as rendered on iOS and Android, and  Figure 4.11 shows the resulting order confirmation screen.
 
-The flow begins when a user proceeds from the cart to checkout. The \texttt{useCheckoutFlow} hook on the mobile client splits cart items into internal experiences (charged via Stripe) and external or free items (handled separately), then creates a Medusa payment collection and session representing the transaction. The hook then invokes the mobile Stripe SDK's \texttt{initPaymentSheet} followed by \texttt{presentPaymentSheet}, which renders the native Stripe payment UI for card collection. On successful payment, the client calls a \texttt{completeOrder} endpoint that in turn calls Medusa's \texttt{/store/carts/\{cartId\}/complete} to place the order. Figure 4.10 shows the PaymentSheet as rendered on iOS and Android, and Figure~\ref{fig:one-time-experience-purchases} shows the resulting order confirmation screen.
+
 \thesisfigure{ch4-one-time-experience-purchases.png}{Stripe PaymentSheet on iOS During One-Time Experience Checkout}{Stripe PaymentSheet Rendered on iOS During One-Time Experience Checkout}{}{one-time-experience-purchases}
 
 \subsubsection{Elite Subscription Billing}
@@ -116,13 +114,14 @@ The Elite tier requires recurring subscription billing, which is implemented thr
 The payment router implements six procedures to support the subscription surface: \texttt{getUserSubscription} and \texttt{getSubscription} for reading current state, \texttt{createCustomerSession} for initiating the Stripe Pricing Table flow, \texttt{getEliteSubscriptionPrice} for resolving the correct price identifier, \texttt{cancelSubscription} for ending an active subscription, and \texttt{createPaymentIntent} for the one-time flow described above. A subscription record is persisted to the Supabase payments table with \texttt{type = "subscription"}, capturing the Stripe customer identifier, the Stripe subscription identifier, the billing interval, and the mirrored Stripe subscription status.
 
 \section{Product Inventory Implementation}
-The product inventory module realizes the design documented in Sections 3.8, 3.9, and the inventory-related parts of Section 3.13. A structural note is important before presenting the implementation detail: the Adnexio platform is delivered as two distinct repositories the consumer-facing monorepo (containing the mobile app, the Next.js API host, and the shared packages), and a separate Medusa backend repository that contains the commerce engine and its custom admin extensions. The authoring tools for internal experiences, the PlatinumList synchronization extension, and the category management UI are implemented within the Medusa backend repository. This subsection therefore documents the inventory module from two complementary perspectives: the authoring surface (evidenced through Medusa admin screenshots) and the consumption surface (evidenced through the mobile client's consumption logic, which resides in the monorepo documented in Chapter 4.1).
+The product inventory module realizes the design documented in Sections~\ref{section:Integrate external experience to system}, \ref{section:Product Inventory}, and the inventory-related parts of Section~\ref{section:Internal Tools Design}. A structural note is important before presenting the implementation detail: the Adnexio platform is delivered as two distinct repositories the consumer-facing monorepo (containing the mobile app, the Next.js API host, and the shared packages), and a separate Medusa backend repository that contains the commerce engine and its custom admin extensions. The authoring tools for internal experiences, the PlatinumList synchronization extension, and the category management UI are implemented within the Medusa backend repository. This subsection therefore documents the inventory module from two complementary perspectives: the authoring surface (evidenced through Medusa admin screenshots) and the consumption surface (evidenced through the mobile client's consumption logic, which resides in the monorepo documented in Chapter~\ref{section:monorepo-structure}).
 
 \subsection{Internal Experience Management}
 Internal experiences are authored through a custom admin extension within the Medusa backend, and are consumed by the mobile client as standard Medusa products carrying typed variants and metadata fields. This subsection documents both sides of that boundary.
 
+\textcolor{red}{\textbf{TODO: Recheck Section 3.9.2}} \\
 \subsubsection{Authoring Surface}
-The admin authoring form realizes the metadata schema described in Section 3.9.2. Administrators create internal experiences by filling in a structured form that captures basic information (event title, location, event date, end date), pricing configuration (base price, currency, availability, max capacity), operational constraints (duration, age restriction, weight limit), and policy text (terms and conditions, refund policy). Figure~\ref{fig:authoring-surface-1} and Figure~\ref{fig:authoring-surface-2} show the admin metadata form as it appears to the authoring user.
+The admin authoring form realizes the metadata schema described in Section 3.9.2. Administrators create internal experiences by filling in a structured form that captures basic information (event title, location, event date, end date), pricing configuration (base price, currency, availability, max capacity), operational constraints (duration, age restriction, weight limit), and policy text (terms and conditions, refund policy). Figure~\ref{fig:authoring-surface-1} and ~\ref{fig:authoring-surface-2} show the admin metadata form as it appears to the authoring user.
 
 \thesisfigure{ch4-authoring-surface-1.png}{Internal experience metadata in Medusa admin (1)}{Internal experience metadata in Medusa admin (1)}{}{authoring-surface-1}
 
@@ -137,6 +136,7 @@ The \textbf{rental model} is used for asset-based services such as car rentals. 
 \thesisfigure{ch4-authoring-surface-4.png}{Rental pricing tier configuration}{Rental pricing tier configuration}{}{authoring-surface-4}
 
 \subsubsection{Consumption Surface}
+\label{subsubsection:Consumption Surface}
 On the mobile side, internal experiences surface through the same product rendering pipeline used for all catalog items. The mobile client reads the following metadata fields from the product record and uses them to shape the user interface:
 
 \begin{itemize}
@@ -153,15 +153,17 @@ The experience title, base date fields, and starting price are consumed from sta
 
 \textbf{Rental Duration-to-Tier Mapping.} The mobile booking screen for rental experiences implements the tier-selection rule directly: durations under seven days apply the daily tier, durations between seven and twenty-nine days apply the weekly tier, and durations of thirty days or longer apply the monthly tier. The selected tier is matched to the appropriate product variant by seat category name, and the client updates the displayed price accordingly as the user adjusts the start and end dates.
 
+\textcolor{red}{\textbf{TODO: Recheck Section 3.11.1}} \\
 \textbf{Terms Acceptance Gate.} The terms-acceptance gate described in Section 3.11.1 is fully implemented. When an experience's metadata includes a non-empty \texttt{terms\_text} field, the primary action button on the detail screen is disabled and its label reads ``accept terms to continue'' until the user checks the acceptance box. Once accepted, the button becomes active and its label transitions to the standard booking action.
 
 \subsection{PlatinumList Synchronization}
+\label{subsection:PlatinumList Synchronization}
 PlatinumList synchronization comprises two distinct integrations in the platform, which are documented separately to accurately reflect where each integration lives.
 
 \subsubsection{Product Sync (Medusa Backend Extension)}
-The core synchronization pipeline described in Section 3.8 fetching event data from the PlatinumList API, transforming it into the platform's product schema, and seeding it into the Medusa catalog is implemented as a custom Medusa admin extension within the separate backend repository. From the perspective of the mobile client and the Next.js API host, PlatinumList-sourced products are indistinguishable from internally authored products except for a \texttt{PL:} prefix on their handle or SKU, which the mobile checkout flow uses to route payment appropriately (discussed below).
+The core synchronization pipeline described in Section~\ref{section:Integrate external experience to system} fetching event data from the PlatinumList API, transforming it into the platform's product schema, and seeding it into the Medusa catalog is implemented as a custom Medusa admin extension within the separate backend repository. From the perspective of the mobile client and the Next.js API host, PlatinumList-sourced products are indistinguishable from internally authored products except for a \texttt{PL:} prefix on their handle or SKU, which the mobile checkout flow uses to route payment appropriately (discussed below).
 
-The admin extension realizes the manual-sync design choice documented in Section 3.13.4: an administrator initiates synchronization explicitly through the PlatinumList Events page in the Medusa admin, and the extension surfaces a success or failure indicator upon completion. Figure~\ref{fig:product-sync} shows the admin extension interface as rendered in the Medusa admin portal.
+The admin extension realizes the manual-sync design choice documented in Section~\ref{subsection:PlatinumList Extension}: an administrator initiates synchronization explicitly through the PlatinumList Events page in the Medusa admin, and the extension surfaces a success or failure indicator upon completion. Figure~\ref{fig:product-sync} shows the admin extension interface as rendered in the Medusa admin portal.
 
 \thesisfigure{ch4-product-sync.png}{PlatinumList sync extension in the Medusa admin}{PlatinumList sync extension in the Medusa admin}{}{product-sync}
 
@@ -185,7 +187,7 @@ The mobile Explore tab renders a product count on each category tile to indicate
 A technical note is worth recording: the count reflects direct category assignments only and does not roll up child-category counts into their parent. A parent category whose products are all assigned to its children would therefore show a count of zero even if its subtree contains many experiences.
 
 \section{Booking Flow Implementation}
-The booking flow module realizes the five-stage user journey documented in Section 3.12, along with the booking-management surface that follows a completed transaction. The flow is implemented across the mobile client, the tRPC router, and the Medusa commerce backend, and is the primary revenue path of the platform. This subsection documents each stage in the implemented order: detail, configuration, cart, checkout, confirmation, and post-transaction booking management.
+The booking flow module realizes the five-stage user journey documented in Section~\ref{section:Booking Flow}, along with the booking-management surface that follows a completed transaction. The flow is implemented across the mobile client, the tRPC router, and the Medusa commerce backend, and is the primary revenue path of the platform. This subsection documents each stage in the implemented order: detail, configuration, cart, checkout, confirmation, and post-transaction booking management.
 
 \subsection{Experience Detail Screen}
 The experience detail screen serves as the first stage of the booking journey and consolidates all information required for the user to make a booking decision into a single consolidated view. Figure~\ref{fig:experience-detail-screen} shows the detail screen as rendered for a representative internal experience.
@@ -193,12 +195,12 @@ The experience detail screen serves as the first stage of the booking journey an
 
 \noindent\textbf{Content Rendering.} The screen renders the experience title, starting price, location, duration, capacity, age and weight restrictions, transport arrangements, and a rich description block. The image carousel is implemented using a horizontally scrollable list with ten-second auto-play and pagination dots, and tapping an image opens a full-screen image viewer for closer inspection.
 
-\textbf{Terms and Conditions Gate.} As documented in Section 4.3.1.2, the primary action button is disabled and labeled "accept terms to continue" until the user explicitly checks the terms acceptance box, for any experience carrying a non-empty \texttt{terms\_text} metadata field. Only after acceptance does the button become active and transition to the standard booking action label.
+\textbf{Terms and Conditions Gate.} As documented in Section~\ref{subsubsection:Consumption Surface}, the primary action button is disabled and labeled "accept terms to continue" until the user explicitly checks the terms acceptance box, for any experience carrying a non-empty \texttt{terms\_text} metadata field. Only after acceptance does the button become active and transition to the standard booking action label.
 
 \textbf{Contact Lifestyle Assistant.} A secondary action button on the detail screen allows users to contact the lifestyle assistant directly. The behavior is tier-aware: Elite users are routed into WhatsApp through a deep link for direct concierge contact, while non-Elite users are routed to an email-based support channel via a \texttt{mailto:} handler targeting the platform's support address. Toast feedback confirms the action on press.
 
 \subsection{Date, Time, and Ticket Selection}
-The configuration stage adapts dynamically to the experience's pricing model, rendering one of the three configurations designed in Section 3.12.1. The variant-grouping logic that underpins this adaptive rendering is documented in Section 4.3.1.2.
+The configuration stage adapts dynamically to the experience's pricing model, rendering one of the three configurations designed in Section~\ref{subsection:Booking Stages}. The variant-grouping logic that underpins this adaptive rendering is documented in Section~\ref{subsubsection:Consumption Surface}.
 
 \textbf{Dynamic Ticket Categories.} Rather than hard-coding ticket categories, the booking screen extracts the available seat categories directly from the product's variant metadata at render time. The TicketSelector component maps over the filtered set of available categories, rendering one row per category with its own quantity selector and price. This allows the same booking screen to render 
 
@@ -211,6 +213,7 @@ This rendering without any configuration-specific conditional logic on the mobil
 \thesisfigure{ch4-date-time-and-ticket-selection.png}{Date, time, and ticket selection}{Date, time, and ticket selection for (a) open-dates (b) show-time and (c) rental experiences}{}{date-time-and-ticket-selection}
 
 \subsection{Cart}
+\label{subsection:Cart}
 The cart is a persistent, multi-item structure that retains added experiences across the session and across app restarts. Figure~\ref{fig:cart} shows the cart screen with a representative multi-item booking.
 
 \thesisfigure{ch4-cart.png}{Cart screen showing multi-item booking with reservation timer}{Cart screen showing multi-item booking with reservation timer}{}{cart}
@@ -218,7 +221,7 @@ The cart is a persistent, multi-item structure that retains added experiences ac
 The cart implementation has three key characteristics:
 \begin{enumerate}
   \item \textbf{Persistent identity.} The cart identifier is stored in the device's asynchronous storage under a namespaced key. A user who closes and reopens the application returns to the same cart with the same held items, rather than losing state on every app lifecycle event.
-  \item \textbf{Multi-item composition.} The cart is structured as a typed array of line items, each carrying its own metadata payload booking date, guest count per category, and special requests. Users may compose a trip of several experiences and check out in a single transaction, as designed in Section 3.12.1.
+  \item \textbf{Multi-item composition.} The cart is structured as a typed array of line items, each carrying its own metadata payload booking date, guest count per category, and special requests. Users may compose a trip of several experiences and check out in a single transaction, as designed in Section~\ref{subsection:Booking Stages}.
   \item \textbf{Reservation timer.} A fifteen-minute countdown begins when the first item is added to the cart:
   \begin{enumerate}
     \item The timer ticks once per second and renders prominently at the top of the cart screen.
@@ -228,7 +231,7 @@ The cart implementation has three key characteristics:
 \end{enumerate}
 
 \subsection{Checkout}
-The checkout screen is the intermediate review step between the cart and the Stripe PaymentSheet, implementing the design rationale documented in Section 3.12.1. 
+The checkout screen is the intermediate review step between the cart and the Stripe PaymentSheet, implementing the design rationale documented in Section~\ref{subsection:Booking Stages}.
 The checkout screen has two responsibilities:
 \begin{enumerate}
   \item \textbf{Review surface.} Before committing to payment, the screen presents:
@@ -238,7 +241,7 @@ The checkout screen has two responsibilities:
     \item A "browse more experiences" link allowing the user to return to the Explore tab.
     \item A Stripe trust indicator at the foot of the summary.
   \end{itemize}
-  \item \textbf{Payment initiation.} Tapping the "Pay" button triggers the payment flow documented in Section 4.2.3.1  the cart is split by payment type, a Medusa payment collection is created, and the Stripe PaymentSheet is initialized and presented. Detailed payment architecture is documented there rather than duplicated here.
+  \item \textbf{Payment initiation.} Tapping the "Pay" button triggers the payment flow documented in Section~\ref{subsubsection:One-Time Experience Purchases}. The cart is split by payment type, a Medusa payment collection is created, and the Stripe PaymentSheet is initialized and presented. Detailed payment architecture is documented there rather than duplicated here.
 \end{enumerate}
 
 \subsection{Confirmation}
@@ -259,7 +262,7 @@ The confirmation stage is composed of three elements:
 
   \item \textbf{Confirmation email dispatch.} Order-placement emails are dispatched through the Medusa backend's notification system (triggered by \texttt{order.placed} events), not through this monorepo's Resend integration. The Resend integration handles a dedicated subset of transactional emails --- subscription cancellation, booking cancellation, and the Elite welcome email. This split reflects the architectural boundary between the commerce engine (order lifecycle) and the application layer (user-account and subscription events).
 
-  \item \textbf{Failure handling.} Payment failures are rendered inline within the Stripe PaymentSheet itself rather than surfaced through a dedicated failure screen, allowing the user to correct their input and reattempt payment without losing context. This is a deliberate design choice documented in Section 3.12.1 and is visible in Figure~\ref{fig:confirmation} from Section 4.2.3.1.
+  \item \textbf{Failure handling.} Payment failures are rendered inline within the Stripe PaymentSheet itself rather than surfaced through a dedicated failure screen, allowing the user to correct their input and reattempt payment without losing context. This is a deliberate design choice documented in Section~\ref{subsection:Booking Stages} and is visible in Figure~\ref{fig:confirmation} from Section~\ref{subsubsection:One-Time Experience Purchases}.
 \end{enumerate}
 
 \subsection{My Bookings}
@@ -296,7 +299,7 @@ Figure~\ref{fig:my-bookings-2} shows the booking detail screen in its standard s
   \item \textbf{Cancellation flow.} The cancel booking action opens a confirmation modal. On confirmation:
     \begin{itemize}
       \item The client invokes the \texttt{cancelBookingItem} tRPC mutation with the order and item identifiers.
-      \item The mutation targets Medusa's V2 cancellation endpoint, routing the cancellation to the administrative refund-management surface documented in Section 4.6.
+      \item The mutation targets Medusa's V2 cancellation endpoint, routing the cancellation to the administrative refund-management surface documented in Section~\ref{subsubsection:Refund Management}.
       \item A toast confirms that the cancellation request has been submitted for approval.
       \item The local orders query is invalidated to refresh the list, and the booking detail screen updates to reflect the pending cancellation flag on subsequent load.
     \end{itemize}
@@ -306,11 +309,11 @@ Figure~\ref{fig:my-bookings-2} shows the booking detail screen in its standard s
 \subsection{Session Entry and Conversational Flow}
 Elite users enter the builder through two affordances on the mobile application: the "create itinerary" tile on the Browse tab, and a floating AI button on the main surface. Non-Elite users are routed to the tier upgrade prompt instead. The chat modal is titled "ask george" and opens with the assistant message "welcome to your ai travel assistant! when would you like to travel?".
 
-The four-stage conversational flow designed in Section 3.10.3 is implemented as a six-stage mandatory sequence encoded in the system prompt: session start → date validation → pace confirmation → guided exploration → itinerary creation → booking completion. The flow is prompt-enforced rather than state-machine-enforced; at the configured temperature of 0.3 the model follows the prescribed sequence reliably in practice."Ask George" chat interface mid-conversation
+The four-stage conversational flow designed in Section~\ref{subsection: AI Itinerary Builder Design} is implemented as a six-stage mandatory sequence encoded in the system prompt: session start → date validation → pace confirmation → guided exploration → itinerary creation → booking completion. The flow is prompt-enforced rather than state-machine-enforced; at the configured temperature of 0.3 the model follows the prescribed sequence reliably in practice."Ask George" chat interface mid-conversation
 \thesisfigure{ch4-session-entry-and-conversational-flow.png}{"Ask George" chat interface mid-conversation}{"Ask George" chat interface mid-conversation}{}{session-entry-and-conversational-flow}
 
 \subsection{Personalization Inputs and Tool-Driven Generation}
-The builder is powered by GPT-4o via the Vercel AI SDK with a maximum of nine tool-call steps per response. Personalization is assembled at request time: the mobile client transmits the user's onboarding profile with each message, and the server bakes the user's interests, trip type, and dietary preferences (Section 4.2.2) directly into the per-request system prompt.
+The builder is powered by GPT-4o via the Vercel AI SDK with a maximum of nine tool-call steps per response. Personalization is assembled at request time: the mobile client transmits the user's onboarding profile with each message, and the server bakes the user's interests, trip type, and dietary preferences (Section~\ref{subsection:User Onboarding and Personalization}) directly into the per-request system prompt.
 GPT-4o is given access to nine registered tools covering four capabilities:
 
 \begin{enumerate}
@@ -332,13 +335,13 @@ On user confirmation, \texttt{publish\_itinerary} executes a three-step flow:
   \item \textbf{Add to cart} — post each line item to Medusa's /store/carts/{cartId}/line-items endpoint with metadata tying it back to the itinerary.
 \end{enumerate}
 
-This reuses the \textbf{same Medusa endpoint} as the manual booking path (Section 4.4.3), so AI-generated itineraries flow through the identical cart → checkout → Stripe → order pipeline as any other booking.
+This reuses the \textbf{same Medusa endpoint} as the manual booking path (Section~ref{subsection:Cart}), so AI-generated itineraries flow through the identical cart → checkout → Stripe → order pipeline as any other booking.
 
 \section{Internal Tools Implementation}
 The operations admin portal is implemented primarily as a Medusa admin extension within the separate backend repository. This chapter evidences its operation through screenshots of that deployment and documents the integration points within this monorepo that connect the mobile client and the public-facing API to those admin surfaces.
 
 \subsection{Customer Management}
-The customer management surface lives in the Medusa admin. Each registered member appears as a Medusa customer record exposing the fields documented in Section 3.13.1 basic profile, membership tier, and order history. Figure~\ref{fig:customer-management} shows a representative customer record.
+The customer management surface lives in the Medusa admin. Each registered member appears as a Medusa customer record exposing the fields documented in Section~\ref{subsection:Customer Management} basic profile, membership tier, and order history. Figure~\ref{fig:customer-management} shows a representative customer record.
 
 \thesisfigure{ch4-customer-management.png}{Customer record in the Medusa admin}{Customer record in the Medusa admin}{}{customer-management}
 
@@ -365,23 +368,24 @@ Each order record exposes the following core information:
 Administrators retain full control over order records and may perform management actions directly from within the portal, including the ability to manually cancel an order where necessary. Upon cancellation, the order status is automatically updated across the platform.
 
 \subsubsection{Refund Management}
+\label{subsubsection:Refund Management}
 Refund requests submitted by members through the mobile application are surfaced in a dedicated Refunds tab within the Order Management module, isolating them from the general order list for streamlined administrative review. Each refund request is associated with its originating order and awaits manual review by an administrator.
 \thesisfigure{ch4-refund-management.png}{Adnexio Refund Management Screen in Medusa Admin Portal}{Adnexio Refund Management Screen in Medusa Admin Portal}{}{refund-management}
 
 \begin{itemize}
-  \item \textbf{Cancellation Integration Point.} The connection between the mobile client and the refund-management surface is the \texttt{cancelBookingItemV2} tRPC procedure (Section 4.4.6). When a user submits a cancellation from the My Bookings detail screen, the procedure posts to Medusa's \texttt{/store/orders/\{orderId\}/cancel} endpoint with the line item ID, reason, and customer name. Medusa responds with a \texttt{refund\_request} record in pending state, which immediately surfaces in the admin's pending cancellations tab for administrator review.
+  \item \textbf{Cancellation Integration Point.} The connection between the mobile client and the refund-management surface is the \texttt{cancelBookingItemV2} tRPC procedure. When a user submits a cancellation from the My Bookings detail screen, the procedure posts to Medusa's \texttt{/store/orders/\{orderId\}/cancel} endpoint with the line item ID, reason, and customer name. Medusa responds with a \texttt{refund\_request} record in pending state, which immediately surfaces in the admin's pending cancellations tab for administrator review.
   \item \textbf{Refund Execution.} The ``Approve with Refund'' and ``Approve without Refund'' actions in the admin are handled entirely within the Medusa backend. No Stripe refund invocation exists in this monorepo; if ``Approve with Refund'' initiates a Stripe refund, it does so from the Medusa backend's payment module rather than from the Next.js API.
 \end{itemize}
 
 \subsection{Sales Dashboard}
-The sales dashboard described in Section 3.13.3 is implemented as a Medusa admin extension in the separate backend repository. Figure~\ref{fig:sales-dashboard} shows the dashboard as rendered in the Medusa admin, with the Elite customer count, weekly bookings, and total weekly booked value surfaced as designed.
+The sales dashboard described in Section~\ref{subsection:Sales Dashboard} is implemented as a Medusa admin extension in the separate backend repository. Figure~\ref{fig:sales-dashboard} shows the dashboard as rendered in the Medusa admin, with the Elite customer count, weekly bookings, and total weekly booked value surfaced as designed.
 
 \thesisfigure{ch4-sales-dashboard.png}{Sales dashboard in the Medusa admin}{Sales dashboard in the Medusa admin}{}{sales-dashboard}
 
 Because the metrics computation logic resides outside this monorepo, the week-over-week comparison logic and the dashboard's refresh behavior are evidenced through the admin screenshot rather than through in-repo code.
 
 \subsection{PlatinumList Extension}
-The PlatinumList synchronization extension is documented in Section 4.3.2. No additional admin-tool material is required here.
+The PlatinumList synchronization extension is documented in Section~\ref{subsection:PlatinumList Synchronization}. No additional admin-tool material is required here.
 
 \subsection{Notification System}
 The notification system spans this monorepo (for the transactional emails implemented directly in the Next.js API) and the Medusa backend (for order-placement and welcome emails). Table~\ref{tab:email-templates}
@@ -395,6 +399,7 @@ All templates are dispatched via Resend, except the Membership Invite, which use
 To empirically ground the builder's value claim, a comparative user study was conducted against the manual booking flow.
 
 \subsection{Methodology}
+\label{subsection:Methodology}
 Five participants were instructed to plan a three-day "Romantic Anniversary" trip to Dubai. The trip planning task required specific inclusions for each day: one evening activity with a view, one luxury dinner, and one afternoon relaxation activity. Participants sequentially utilized two distinct planning methods: manual selection through the Explore tab and the AI builder using a natural-language prompt.
 
 Four quantitative metrics were recorded for each method: total completion time, incidence of scheduling conflicts, presence of human errors (incorrect date or price), and the number of prompt retries (applicable only to the AI method). Furthermore, participants provided a 1–10 rating for each method regarding ease of use, confidence, and perceived speed.
@@ -403,9 +408,10 @@ Four quantitative metrics were recorded for each method: total completion time, 
 The AI builder delivered an \textbf{87.8\% reduction in median completion time} and a \textbf{100\% reduction in scheduling conflicts} against the manual method, while raising perceived ease of use by \textbf{59\%}. The time advantage stems from processing all scenario constraints, dates, interest categories, pace, and pairing coherence in a single streamed response, whereas the manual method requires sequential discovery, filtering, and verification of each experience. The conflict-reduction advantage stems from scheduling against validated product variants with enforced time boundaries, which structurally precludes overlaps rather than discouraging them.
 
 \subsection{Feature Comparison Against AI Travel-Planning Platforms}
-Section 2.2 examines competitors in the luxury concierge space (Quintessentially, Velocity Black, John Paul Group), none of which offer a conversational AI itinerary builder comparable to Adnexio's. To position the platform against tools that do offer similar capability, two AI travel-planning platforms from the broader market were selected for feature comparison: 
+\label{subsection:Feature Comparison Against AI Travel-Planning Platforms}
+Section~\ref{section:market-research} examines competitors in the luxury concierge space (Quintessentially, Velocity Black, John Paul Group), none of which offer a conversational AI itinerary builder comparable to Adnexio's. To position the platform against tools that do offer similar capability, two AI travel-planning platforms from the broader market were selected for feature comparison: 
 \input{tables/ai-itinerary-feature-comparison}
 
 The comparison confirms that Adnexio is not differentiated on the generative dimensions of AI itinerary planning all three platforms support conversational generation, structured day-by-day output, and real-time availability verification. Where Adnexio separates from the comparators is in the \textbf{structural integration between planning and booking}, and in the \textbf{curation layer underneath the AI.} Adnexio is the only platform in the comparison that allows the user to proceed from chat directly to checkout within a single interface; both Layla.ai and Booking.com require the user to cross-reference and book each experience through external channels once the itinerary is produced. Adnexio also grounds its recommendations in a curated, UAE-focused catalog of luxury experiences, whereas Layla.ai draws on open web content that may be inaccurate, outdated, or not bookable at the stated price, and Booking.com operates as an open marketplace without the luxury-tier curation that defines Adnexio's target segment.
 
-The remaining rows further reinforce the positioning. Pace-based density control and hyper-local UAE luxury curation are unique to Adnexio among the three platforms, both reflecting the design decision documented in Section 3.10.3 to treat the itinerary builder as a high-touch planning tool for a specific demographic rather than a general-purpose travel assistant. The capability gap is therefore not one of raw AI performance but of product scope: Adnexio is built end-to-end for a narrowly defined luxury-lifestyle use case, while the comparator platforms serve broader travel-planning needs through more generalized infrastructure.
+The remaining rows further reinforce the positioning. Pace-based density control and hyper-local UAE luxury curation are unique to Adnexio among the three platforms, both reflecting the design decision documented in Section~\ref{subsection:AI Itinerary Builder Design} to treat the itinerary builder as a high-touch planning tool for a specific demographic rather than a general-purpose travel assistant. The capability gap is therefore not one of raw AI performance but of product scope: Adnexio is built end-to-end for a narrowly defined luxury-lifestyle use case, while the comparator platforms serve broader travel-planning needs through more generalized infrastructure.

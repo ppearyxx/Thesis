@@ -62,6 +62,7 @@ The deployment pipeline is delineated into two automated tracks:
     \item \textbf{The Admin Track} The lower track manages the Admin Repository, which is isolated from client-side dependencies. Updates trigger a deployment to Render, which hosts the backend infrastructure (MedusaJS). Similar to the application track, this workflow enforces a "DB Migration" step against the underlying PostgreSQL database to ensure data integrity prior to updating the live Admin Portal.
 \end{enumerate}
 \section{User Roles \& Permissions}
+\label{section:User Roles \& Permissions}
 \input{tables/user-roles}
 In (Table~\ref{tab:user-roles}) User Roles \& Permissions, Adnexio platform employs a Role-Based Access Control (RBAC) model to manage user permissions and tailor the experience to different user types. The system defines four distinct roles Guest, Essential, Elite, and Administrator each with a specific set of capabilities and access levels designed to serve their unique needs within the platform's ecosystem.
 
@@ -78,9 +79,11 @@ The Elite User is the premium tier for affluent clients seeking a high-touch, fu
 The Administrator is an internal, back-office role with comprehensive oversight and control of the entire platform. Administrators have privileged access to all platform functionalities, including both the Essential and Elite user views. Their primary responsibilities include overseeing all in-app payments, processing manual transactions, sending custom notifications to members, and managing the curated catalogue of experiences.
 
 \section{User Registration Flow}
+\label{section:User Registration Flow}
 The Adnexio platform implements a three-tiered access system which are Guest, Essential, and Elite. Each with distinct registration and authorization flows managed through Supabase Auth and the Next.js API layer. This stratified architecture ensures users receive immediate provisioning of appropriate permissions and data access through Row-Level Security (RLS) policies enforced at the PostgreSQL database level.
 
 \subsection{Guest User Flow (Anonymous Access)}
+\label{subsection:Guest User Flow (Anonymous Access)}
 The Guest flow enables rapid, frictionless platform exploration, allowing prospective members to browse available experiences without requiring upfront registration commitment.
 
 \textbf{Process Flow:}
@@ -91,6 +94,7 @@ The Guest flow enables rapid, frictionless platform exploration, allowing prospe
 \end{enumerate}
 
 \subsection{Essential User Flow (Standard Registration)}
+\label{subsection:Essential User Flow (Standard Registration)}
 The Essential tier represents the platform's standard registration pathway, providing authenticated users with permanent access to core platform functionality through a self-service onboarding process. \\
 \textbf{Process Flow:}
 \begin{enumerate}
@@ -111,6 +115,7 @@ Elite status represents a premium tier requiring application-based approval and 
 \end{enumerate}
 
 \section{User Authentication and Authorization}
+\label{section:User Authentication and Authorization}
 \subsection{Authentication flow}
 The authentication process for the Adnexio platform is handled by \textbf{Supabase Auth}, which manages user sessions, password hashing, and token issuance. This streamlines development by leveraging a managed, secure, and scalable authentication service. \\
 JWT Implementation: The system is built on a JSON Web Token (JWT) architecture. Upon successful sign-in, Supabase issues a unique JWT that is sent to the client. This token contains encrypted user claims, including the user's role (Guest, Essential, or Elite) and a unique user ID (auth.uid).
@@ -170,6 +175,7 @@ Regardless of residency status, all users must define their core interests, diet
     \item \textbf{Preferred Pace:} Users define their desired itinerary pace (e.g., Relaxed, Balanced, Packed), which sets a critical constraint for the GPT-4o model when constructing daily itineraries.
 \end{itemize}
 \section{Payment System Architecture}
+\label{section:Payment System Architecture}
 The Adnexio platform's commerce functionality is supported by the Stripe payment processing platform, which handles two distinct transaction models requiring one time purchase and tiers subscriptions. This robust architecture ensures security, scalability, and accurate financial record-keeping by integrating the Next.js Server with Stripe's APIs and Webhooks.
 \subsection{Non-Subscription Payment Flow}
 \label{subsection:Non-Subscription Payment Flow}
@@ -230,6 +236,7 @@ Dynamic Pricing \& Categories: Unlike hard-coded forms, the "Guest Details" sect
 
 
 \section{Product Inventory}
+\label{section:Product Inventory}
 Following the integration of the external PlatinumList API described in Section~\ref{section:Integrate external experience to system}, the system requires a unified layer to ingest, organize, and expose all experience data both external and internal to end users. This section describes the design and architecture of the product inventory system, category management, itinerary creation workflows.
 
 \subsection{Unified Product Inventory Architecture}
@@ -322,9 +329,11 @@ Personalization is instead concentrated in the AI Itinerary Builder (Sectio~\ref
 
 Each product card renders a consistent set of fields cover image, category tag label, truncated title, and starting price chosen to support rapid visual scanning while encouraging users to tap through for full detail rather than compressing a complete decision surface into each card.
 \section{Booking Flow}
+\label{section:Booking Flow}
 The booking flow defines the end-to-end journey a user takes from identifying an experience to receiving confirmation of a completed transaction. It is designed as a linear, five-stage sequence in which each stage resolves a specific decision before advancing the user to the next, supplemented by a post-transaction management surface for reviewing and acting on completed bookings.
 
 \subsection{Booking Stages}
+\label{subsection:Booking Stages}
 There are five stages. Those are designed to progressively narrow the user's commitment: from evaluating an experience, to configuring its specifics, to reviewing and paying for it, to receiving assurance that the booking is secured. The stage are including
 \begin{enumerate}
     \item \textbf{Detail.} The first stage presents all information required for the user to make a booking decision in a single consolidated view: imagery, title, starting price, location, duration, capacity, restrictions, transport arrangements, and description. A key design rule at this stage is that acceptance of terms and conditions gates the primary action button. Where an experience carries mandatory terms, the user cannot advance until those terms are explicitly acknowledged, ensuring legal and operational requirements are satisfied before any configuration begins. The primary action button itself adapts its label to reflect the current state for example, indicating pending terms acceptance or unavailability for booking so that the user receives immediate feedback on why progression may be blocked.
@@ -360,7 +369,9 @@ Each booking card surfaces a consistent set of fields: experience title, locatio
 The separation of upcoming, past, and awaiting states, combined with derived rather than stored status, yields a booking management surface that stays accurate over time without requiring explicit lifecycle events to transition bookings between views.
 
 \section{Internal Tools Design}
+\label{section:Internal Tools Design}
 \subsection{Customer Management}
+\label{subsection:Customer Management}
 The Customer Management module serves as the central interface within the Medusa Admin Portal for overseeing all registered members of the Adnexio platform. When a user completes registration through the mobile application, their account data is automatically synchronized and provisioned as a customer record within Medusa, ensuring that the administrative team has immediate visibility over all active members from a single interface.
 
 Each customer record surfaces the following core information:
@@ -389,6 +400,7 @@ Two resolution outcomes are designed into the flow:
 This dual-outcome design acknowledges that not every refund request warrants a monetary return; some cases are resolved through alternative remediation, goodwill, or policy exceptions while still requiring a formal administrative response. In both cases, the order status synchronizes automatically upon the administrator's action, ensuring data consistency without manual intervention.
 
 \subsection{Sales Dashboard}
+\label{subsection:Sales Dashboard}
 The Sales Dashboard is designed as a lightweight, at-a-glance overview of key platform metrics, intended for recurring operational review rather than deep analytical inquiry. Its design intent is explicitly minimalist: surface the fewest metrics necessary to convey platform health at a glance, and defer deeper analysis to the individual order and customer modules.
 
 Three metrics are selected as the dashboard's core surface:
@@ -401,6 +413,7 @@ Three metrics are selected as the dashboard's core surface:
 The booking metrics are presented alongside week-over-week percentage change indicators to provide immediate trend context, while the Elite customer count is displayed as a standing figure because it reflects cumulative state rather than periodic activity. The rationale for this metric set is that together they answer three operationally relevant questions: how exclusive is the member base, how active is the platform, and how valuable is that activity.
 
 \subsection{PlatinumList Extension}
+\label{subsection:PlatinumList Extension}
 The PlatinumList Extension is designed as the \textbf{operational interface for the data seeding pipeline} described in Section~\ref{section:Integrate external experience to system}. Where that section defines how external inventory is transformed into the platform's product schema, this extension provides the administrative surface through which that pipeline is invoked.
 
 A deliberate design decision is that synchronization is \textbf{manual rather than scheduled or automatic}. An administrator must explicitly trigger a sync for the pipeline to execute. This choice reflects two considerations: first, external inventory is vetted before inclusion in the curated catalogue, and an automated feed would bypass that editorial oversight; second, manual invocation gives the team direct control over when catalogue changes are introduced, preventing unexpected shifts in availability during sensitive operational windows.
