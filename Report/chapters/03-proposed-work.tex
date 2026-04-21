@@ -273,7 +273,7 @@ Administrators create pre-made itineraries through the Itineraries extension in 
 Completed itineraries may be saved as a Draft or published immediately. Upon publication, the itinerary becomes visible in the mobile application's pre-made itinerary discovery section, where users may add the entire bundle to their cart in a single action.
 
 \subsection{AI Itinerary Builder Design}
-\label{subsection: AI Itinerary Builder Design}
+\label{subsection:AI Itinerary Builder Design}
 The AI Itinerary Builder implements a structured session-based workflow to generate personalized day-by-day plans for Elite users. The builder reuses the same itinerary slot endpoints defined for pre-made itineraries and invokes them programmatically as tools called by the GPT-4o model via the Vercel AI SDK. \\
 \textbf{Session Flow} \\
 The builder follows a \textbf{four-stage session lifecycle:}
@@ -325,7 +325,7 @@ In the absence of a filter or search query, the Explore tab renders products in 
 
 This reflects a separation between two modes of product surfacing. The Explore tab is a neutral, catalog-wide browsing surface whose ordering should be driven by administrative curation, not user-specific signals. Personalization here would introduce opacity: users would not know why certain experiences surfaced, and two users would see different views of the same catalog without a clear mental model for the divergence.
 
-Personalization is instead concentrated in the AI Itinerary Builder (Section~\ref{subsection: AI Itinerary Builder Design}), where the user has explicitly invited the system to tailor output and retains visibility into the reasoning through the conversational interface. This preserves a clear distinction between browsing the catalog and receiving curated recommendations.
+Personalization is instead concentrated in the AI Itinerary Builder (Section~\ref{subsection:AI Itinerary Builder Design}), where the user has explicitly invited the system to tailor output and retains visibility into the reasoning through the conversational interface. This preserves a clear distinction between browsing the catalog and receiving curated recommendations.
 
 Each product card renders a consistent set of fields cover image, category tag label, truncated title, and starting price chosen to support rapid visual scanning while encouraging users to tap through for full detail rather than compressing a complete decision surface into each card.
 \section{Booking Flow}
