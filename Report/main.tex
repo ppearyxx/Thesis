@@ -14,6 +14,7 @@
 \usepackage{adjustbox}
 \usepackage{float}
 \usepackage{caption}
+\usepackage{xstring}
 \usepackage{polyglossia}
 \setdefaultlanguage{english}
 \setotherlanguage{thai}
@@ -71,13 +72,17 @@
 \def\thaidisscoadvisorthree{}
 \def\thaidissdegree{วิศวกรรมศาสตรบัณฑิต}
 
-% \thesisfigure{filename}{short LoF caption}{full caption}{cite key}{label}
+% \thesisfigure{filename}{short LoF caption}{full caption}{source URL or cite key}{label}
 \newcommand{\thesisfigure}[5]{%
   \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth, height=0.5\textheight, keepaspectratio]{#1}
     \captionsetup{justification=centering}
-    \caption[#2]{#3\ifx&#4&\else~\cite{#4}\fi}
+    \IfSubStr{#4}{://}{%
+      \caption[#2]{#3~\url{#4}}%
+    }{%
+      \caption[#2]{#3\ifx&#4&\else~\cite{#4}\fi}%
+    }%
     \label{fig:#5}
   \end{figure}
 }

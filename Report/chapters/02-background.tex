@@ -14,9 +14,9 @@ Monolithic architecture refers to a traditional software design pattern in which
 
 The primary advantage of monolithic architecture lies in its simplicity. It is straightforward to develop, test, and deploy, making it particularly suitable for small teams and minimum viable products (MVPs). Since all components share the same memory space and runtime environment, monolithic applications also benefit from reduced communication overhead compared to distributed systems. This architecture enables rapid iteration during early development phases, where time-to-market and cost efficiency are prioritized.
 
-\thesisfigure{ch2-monolithic-architecture-1.png}{A Diagram of Monolithic Architecture}{A Diagram of Monolithic Architecture}{camunda2023monolith}{monolithic-architecture}
+\thesisfigure{ch2-monolithic-architecture-1.png}{A Diagram of Monolithic Architecture}{A Diagram of Monolithic Architecture}{https://camunda.com/blog/2023/08/monolith-vs-microservice-architecture-comparison}{monolithic-architecture}
 
-\thesisfigure{ch2-monolithic-architecture-2.png}{A diagram representing a modular monolithic architecture}{A diagram representing a modular monolithic architecture, where separate teams own distinct business domains such as Order and Consumer Management within a single, unified application}{richardson2023monolithic}{modular-monolithic-architecture}
+\thesisfigure{ch2-monolithic-architecture-2.png}{A diagram representing a modular monolithic architecture}{A diagram representing a modular monolithic architecture, where separate teams own distinct business domains such as Order and Consumer Management within a single, unified application}{https://microservices.io/patterns/monolithic.html}{modular-monolithic-architecture}
 
 \subsubsection{Domain Driven Design (DDD)}
 
@@ -50,7 +50,7 @@ The T3 Turbo Stack \cite{t3app2025intro} is a modern full-stack development fram
   \item \textbf{Prisma:} An open-source database toolkit that provides a type-safe and intuitive way to interact with your database.
 \end{itemize}
 
-\thesisfigure{ch2-T3-turbo-stack.png}{T3 Application Architecture Overview}{T3 Application Architecture Overview}{hxann2025t3architecture}{t3-turbo-stack}
+\thesisfigure{ch2-T3-turbo-stack.png}{T3 Application Architecture Overview}{T3 Application Architecture Overview}{https://hxann.com/posts/t3-architecture/}{t3-turbo-stack}
 
 \textbf{Why the T3 Stack Matters}
 
@@ -58,7 +58,7 @@ The T3 Stack’s significance lies in its powerful combination of tools, which a
 Furthermore, the stack’s ``convention over configuration’’ philosophy greatly enhances developer productivity, allowing for quicker iteration and more efficient development. This streamlined workflow ensures that as an application scales, it remains highly maintainable and easier for new team members to work on.
 
 \subsubsection{MedusaJS}
-\thesisfigure{ch2-medusa-js.png}{Medusa Dashboard}{Medusa Dashboard}{medusajsdashboard}{medusa-dashboard}
+\thesisfigure{ch2-medusa-js.png}{Medusa Dashboard}{Medusa Dashboard}{https://github.com/adrien2p/awesome-medusajs}{medusa-dashboard}
 
 MedusaJS is an open-source, headless e-commerce framework that emphasizes flexibility and modularity in backend commerce logic. As a headless system, it decouples the backend services from the user-facing presentation layer (Figure~\ref{fig:medusa-dashboard}), which allows for greater system adaptability in multi-channel environments. Unlike traditional monolithic e-commerce platforms, MedusaJS enables developers to build marketplaces, subscription systems, and online storefronts through a customizable plugin-based architecture. This modular nature aligns with the principles of service-oriented architecture, making it suitable for projects that anticipate evolving requirements and third-party integrations. \cite{medusa2025platform} Furthermore, MedusaJS aligns with modern trends in digital commerce, where organizations increasingly adopt open-source frameworks to maintain greater control over customization and reduce dependency on proprietary solutions.
 
@@ -78,7 +78,7 @@ tRPC is a framework designed for building fully type-safe APIs in TypeScript app
 
 \thesisfigure{ch2-tRPC.png}{ tRPC Architecture Overview
 }{ tRPC Architecture Overview
-}{ignatovich2025trpc}{trpc-arch-overview}
+}{https://medium.com/@ignatovich.dm/understanding-trpc-building-type-safe-apis-in-typescript-45258c6c3b73}{trpc-arch-overview}
 
 \subsection{Programming Languages}
 \subsubsection{TypeScript}
@@ -92,7 +92,7 @@ Supabase is an open-source Backend-as-a-Service (BaaS) platform that provides de
 Drizzle ORM \cite{drizzle2025overview} is a TypeScript-first Object-Relational Mapping (ORM) library specifically designed for relational databases. It fundamentally differs from many traditional ORMs by adopting a schema-first approach, where the database schema is defined directly within the application's code using a strongly typed API. This methodology provides developers with compile-time error checking, which significantly enhances code safety and maintainability by identifying data-related errors before the application is even executed. By providing a type-safe query builder, Drizzle ORM reduces the likelihood of runtime errors, thereby improving developer productivity and establishing a robust, predictable interface between the application and the database. This approach aligns with modern software development paradigms that prioritize static typing and early error detection to build more reliable and scalable systems.
 
 \subsubsection{PGVector}
-\thesisfigure{ch2-PGVector.png}{Overview Diagram of PGVector implementation}{Overview Diagram of PGVector implementation}{pgedge2025pgvector}{pgvector-diagram}
+\thesisfigure{ch2-PGVector.png}{Overview Diagram of PGVector implementation}{Overview Diagram of PGVector implementation}{https://www.pgedge.com/blog/embedding-near-the-edge-pgedge-distributed-postgresql-with-pgvector}{pgvector-diagram}
 PGVector is an open-source extension for PostgreSQL that enables vector similarity search within relational databases \cite{supabase2025pgvector}. It supports the storage and retrieval of high-dimensional vector embeddings, making it suitable for artificial intelligence and machine learning applications such as semantic search, recommendation systems, and natural language processing. By integrating vector-based queries directly into PostgreSQL (Figure~\ref{fig:pgvector-diagram}), PGVector allows developers to combine the robustness of relational databases with the flexibility of modern AI-driven search capabilities. In platforms such as Supabase, PGVector extends traditional database functionality to support efficient embedding-based search across large datasets.
  
 \subsection{Infrastructure}
@@ -100,7 +100,7 @@ PGVector is an open-source extension for PostgreSQL that enables vector similari
 Google Cloud is a comprehensive suite of cloud computing services engineered to support the deployment and operation of scalable, reliable, and secure applications \cite{googlecloud2025docs}. The platform's foundational architecture is built on a distributed network of data centers, providing global availability and high-performance computing resources. As a unified platform, it offers a multi-layered service model that includes Infrastructure-as-a-Service (IaaS) for raw computing power, Platform-as-a-Service (PaaS) for streamlined application development, and Software-as-a-Service (SaaS) for managed applications. These three standard cloud service models are defined by the National Institute of Standards and Technology (NIST) and a detailed breakdown of the management responsibilities for each can be seen in (Figure~\ref{fig:google-shared-responsibility-model}) below.
 \thesisfigure{ch2-google-cloud.png}{Shared Responsibility Model for IaaS, PaaS, and SaaS, as per NIST.
 }{Shared Responsibility Model for IaaS, PaaS, and SaaS, as per NIST.
-}{kinsta2025cloudtypes}{google-shared-responsibility-model}
+}{https://kinsta.com/blog/types-of-cloud-computing/}{google-shared-responsibility-model}
 Beyond these core offerings, Google Cloud integrates specialized tools for big data analytics, artificial intelligence (AI), and machine learning (ML), enabling the rapid incorporation of advanced computational capabilities. This robust ecosystem, combined with native security controls and compliance certifications, makes it a preferred solution for both enterprise and consumer-facing applications, ranging from high-traffic web services to large-scale data processing workflows.
 
 \subsubsection{Apple Developer Account}
@@ -128,12 +128,12 @@ Docker supports efficient resource utilization, rapid deployment, and scalabilit
 The Adnexio platform is designed to integrate with best-in-class third-party systems that support booking, payments, AI services, and customer support. These products ensure the platform meets luxury market expectations for seamlessness, personalization, and reliability.
 
 \subsubsection{SevenRooms}
-SevenRooms \cite{sevenrooms2025ourstory} is a platform widely adopted in the luxury and fine dining sectors. It provides a robust suite of tools for reservation management, waitlist automation, and comprehensive customer relationship management (CRM). Example UI of the SevenRooms CRM can be observed in the (Figure~/ref{fig:seven-rooms-crm}) below. The platform's strategic importance lies in its ability to streamline booking operations and provide a centralized system for managing guest data, which is essential for delivering a highly personalized service. By integrating with a system like SevenRooms, the project can access real-time availability for exclusive venues and efficiently manage client interactions, thereby enhancing customer loyalty and operational efficiency.
-\thesisfigure{ch2-seven-rooms.png}{Example of the SevenRooms CRM User Interface}{Example of the SevenRooms CRM User Interface}{sevenrooms2025ourstory}{seven-rooms-crm}
+SevenRooms \cite{https://sevenrooms.com/our-story/} is a platform widely adopted in the luxury and fine dining sectors. It provides a robust suite of tools for reservation management, waitlist automation, and comprehensive customer relationship management (CRM). Example UI of the SevenRooms CRM can be observed in the (Figure~/ref{fig:seven-rooms-crm}) below. The platform's strategic importance lies in its ability to streamline booking operations and provide a centralized system for managing guest data, which is essential for delivering a highly personalized service. By integrating with a system like SevenRooms, the project can access real-time availability for exclusive venues and efficiently manage client interactions, thereby enhancing customer loyalty and operational efficiency.
+\thesisfigure{ch2-seven-rooms.png}{Example of the SevenRooms CRM User Interface}{Example of the SevenRooms CRM User Interface}{https://sevenrooms.com/our-story/}{seven-rooms-crm}
 
 \subsubsection{PlatinumList}
 PlatinumList [26] is a prominent ticketing and event booking platform in the Middle East and North Africa (MENA) region. Its primary function is to support the discovery and booking of concerts, attractions, and exclusive events. Example UI of the PlatinumList can be observed in the (Figure~\ref{fig:platinum-list-discovery-page}) below. The platform's API is crucial for enabling the project to offer real-time availability and secure ticket purchases for a wide array of regional events. This integration is key to the platform's value proposition, as it provides direct, seamless access to a curated selection of experiences that are highly sought after by the target demographic.
-\thesisfigure{ch2-platinum-list.png}{Discovery PlatinumList Page}{Discovery PlatinumList Page}{platinumlist2025dubai}{platinum-list-discovery-page}
+\thesisfigure{ch2-platinum-list.png}{Discovery PlatinumList Page}{Discovery PlatinumList Page}{https://dubai.platinumlist.net/}{platinum-list-discovery-page}
 
 \subsubsection{Stripe}
 \label{sec:stripe}
@@ -147,7 +147,7 @@ Vercel \cite{vercel2025docs} is a cloud platform for frontend hosting and deploy
 In addition to hosting services, Vercel offers the Vercel AI SDK \cite{vercel2023aisdk}, a toolkit for integrating artificial intelligence into web applications. This SDK supports features such as Large Language Model, real-time inference, and personalization, enabling developers to build adaptive and intelligent user experiences directly within the platform.
 
 \subsubsection{Resend}
-\thesisfigure{ch2-resend.png}{Resend User Onboarding}{Resend User Onboarding}{saasframe2025resend}{resend-ui}
+\thesisfigure{ch2-resend.png}{Resend User Onboarding}{Resend User Onboarding}{https://www.saasframe.io/examples/resend-user-onboarding-4}{resend-ui}
 Resend \cite{resend2023docs} is a modern email delivery platform designed for developers, providing a simple API for sending transactional and marketing emails. It offers features such as email tracking, webhooks, and a clean developer experience with SDKs for popular frameworks. Resend is used in this project to handle automated email notifications, including booking confirmations and member communications (Figure~\ref{fig:resend-ui}).
 
 \subsection{AI tooling}
@@ -176,7 +176,7 @@ Additionally, it uses a series of temporary branches for specific, well-defined 
 \subsubsection{Kanban}
 Kanban \cite{planview2025kanban} is a project management methodology that provides a visual framework for organizing and managing work. It is rooted in a pull-based system where work is initiated only as capacity becomes available, ensuring a continuous and smooth workflow. The fundamental purpose of Kanban is to enhance efficiency by optimizing the flow of work and mitigating bottlenecks. This is achieved by making the workflow transparent, limiting the amount of work in progress, and continuously managing the flow of tasks through a series of defined stages. The methodology does not prescribe specific roles or time-boxed iterations, which provides a high degree of flexibility. An example of a Kanban board illustrating this workflow can be seen in (Figure~\ref{fig:kanban-board}).
 
-\thesisfigure{ch2-kanban.png}{Example of Kanban Board}{Example of Kanban Board}{geeksforgeeks2025kanban}{kanban-board}
+\thesisfigure{ch2-kanban.png}{Example of Kanban Board}{Example of Kanban Board}{https://www.geeksforgeeks.org/software-engineering/kanban-agile-methodology/}{kanban-board}
 \textbf{Core Principles of Kanban}
 
 The methodology is guided by four key principles designed to foster a culture of continuous, evolutionary improvement:
@@ -199,14 +199,14 @@ Adherence to GDPR principles is a critical requirement for any system that inter
 In the luxury and concierge services sector, various applications and platforms serve as key competitors to our new product. These related products offer similar functionalities, targeting high-net-worth individuals with tools for managing experiences, travel, and personal requests. By analyzing these products, we gain insight into current market trends, competitive features, and opportunities for differentiation, allowing us to position our product as a leading solution in this exclusive space.
 
 \subsection{Quintessentially}
-Quintessentially \cite{quintessentially2025about} is a renowned luxury lifestyle management and concierge service that provides personalized services to a global network of high-net-worth clients. It operates on a membership-based model, offering a range of services from everyday requests to extraordinary, once-in-a-lifetime experiences. The company is known for its extensive global network and its ability to deliver bespoke solutions for its clients (Figure~\ref{fig:quintessentially-app}).
+Quintessentially \cite{https://quintessentially.com/about} is a renowned luxury lifestyle management and concierge service that provides personalized services to a global network of high-net-worth clients. It operates on a membership-based model, offering a range of services from everyday requests to extraordinary, once-in-a-lifetime experiences. The company is known for its extensive global network and its ability to deliver bespoke solutions for its clients (Figure~\ref{fig:quintessentially-app}).
 
-\thesisfigure{ch2-quintessentially.png}{Quintessentially Mobile Application}{Quintessentially Mobile Application}{quintessentially2025about}{quintessentially-app}
+\thesisfigure{ch2-quintessentially.png}{Quintessentially Mobile Application}{Quintessentially Mobile Application}{https://quintessentially.com/about}{quintessentially-app}
 
 \subsection{Velocity Black}
 Velocity Black \cite{velocityblack2025membership} is a digital-first, on-demand concierge service that uses artificial intelligence (AI) to enhance its offerings. It is designed for a younger, tech-savvy clientele who value speed and efficiency. The service is accessible through a mobile app, where members can make requests and receive instant responses.
 
-\thesisfigure{ch2-velocity-black.png}{Velocity Black Example UI}{Velocity Black Example UI}{behance2018velocityblack}{velocity-black-ui}
+\thesisfigure{ch2-velocity-black.png}{Velocity Black Example UI}{Velocity Black Example UI}{https://www.behance.net/gallery/77011629/Velocity-Black}{velocity-black-ui}
 
 Key features of Velocity Black include instant access to events and experiences, premium dining reservations, and personalized travel itineraries. The AI-powered platform learns from a user's preferences over time, anticipating their needs and providing tailored recommendations. It combines human expertise with technology to provide a fast and efficient service.
 The platform's primary advantage is its use of technology to provide a streamlined and efficient user experience. Its focus on AI and instant access sets it apart from more traditional, human-centric concierge services. Velocity Black appeals to a generation that expects seamless digital interactions and immediate gratification.
@@ -214,7 +214,7 @@ The platform's primary advantage is its use of technology to provide a streamlin
 \subsection{John Paul Group}
 The John Paul Group \cite{johnpaul2025programmes} is a global leader in premium concierge services, providing bespoke solutions for both individual clients and corporate partners. It operates on a B2B and B2C model, offering its services to luxury brands, financial institutions, and hospitality companies to enhance their customer loyalty programs.
 \thesisfigure{ch2-john-paul.png}{John Paul Group Trademark}{John Paul Group        
-  Trademark}{johnpaul2025home}{john-paul-trademark}
+  Trademark}{https://www.johnpaul.com/en}{john-paul-trademark}
 The group's key features include a wide range of concierge services, from travel and entertainment to home and well-being. It provides a human-centric approach, with a team of highly skilled and multilingual concierge specialists available 24/7. The John Paul Group also offers white-label solutions, allowing its corporate partners to integrate concierge services directly into their own products.
 The main advantage of the John Paul Group is its extensive experience in both the B2B and B2C markets. This dual focus allows it to serve a broader range of clients and provides valuable insights into the different needs of corporate partners and individual members. Its strong corporate relationships give it a unique position in the market.
 
