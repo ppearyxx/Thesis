@@ -10,11 +10,13 @@ The foundational background necessary to understand the Adnexio project. It is d
 \subsection{System Architecture}
 \subsubsection{Monolithic Architecture}
 
-Monolithic architecture refers to a traditional software design pattern in which all components of an application --- including user interface, business logic, and data access layers --- are packaged and deployed as a single (Figure~\ref{fig:monolithic-architecture}), unified unit. In this model, the application runs as one process, often supported by a single codebase and a centralized database. \cite{thalor2024monolithic} describe monolithic systems as tightly coupled, meaning that changes in one part of the application often necessitate redeployment of the entire system.
+\thesisfigure{ch2-monolithic-architecture-1.png}{A Diagram of Monolithic Architecture}{A Diagram of Monolithic Architecture}{camunda2023monolith}{monolithic-architecture}
+
+Monolithic architecture refers to a traditional software design pattern in which all components of an application including user interface, business logic, and data access layers are packaged and deployed as a single (Figure~\ref{fig:monolithic-architecture}), unified unit. In this model, the application runs as one process, often supported by a single codebase and a centralized database. \cite{thalor2024monolithic} describe monolithic systems as tightly coupled, meaning that changes in one part of the application often necessitate redeployment of the entire system.
 
 The primary advantage of monolithic architecture lies in its simplicity. It is straightforward to develop, test, and deploy, making it particularly suitable for small teams and minimum viable products (MVPs). Since all components share the same memory space and runtime environment, monolithic applications also benefit from reduced communication overhead compared to distributed systems. This architecture enables rapid iteration during early development phases, where time-to-market and cost efficiency are prioritized.
 
-\thesisfigure{ch2-monolithic-architecture-1.png}{A Diagram of Monolithic Architecture}{A Diagram of Monolithic Architecture}{camunda2023monolith}{monolithic-architecture}
+
 
 
 \subsubsection{Domain Driven Design (DDD)}
@@ -26,6 +28,7 @@ Two foundational concepts define DDD: Ubiquitous Language and Bounded Contexts. 
 Beyond conceptual clarity, DDD offers practical architectural benefits. The separation provided by Bounded Contexts naturally aligns with modern distributed paradigms such as microservices, where autonomous and loosely coupled services are essential. This approach enables systems to evolve alongside changing business requirements while maintaining technical robustness and strategic alignment with organizational goals. \cite{ozkan2025ddd}
 
 \subsubsection{System Context Diagram}
+\label{subsubsection:System Context Diagram}
 
 The System Context Diagram is rooted in Structured Analysis and Design Technique (SADT). This methodology, developed in the 1970s, aimed to create a more disciplined approach to software development. The SCD is an integral part of Data Flow Diagrams (DFDs), where it serves as the top-level, or Level 0, diagram. \cite{paloalto2025dfd}
 
@@ -53,7 +56,7 @@ The T3 Turbo Stack \cite{t3app2025intro} is a modern full-stack development fram
 
 \textbf{Why the T3 Stack Matters}
 
-The T3 Stack’s significance lies in its powerful combination of tools, which addresses common challenges in full-stack development. Its emphasis on type safety is a game-changer for mitigating runtime errors. By sharing types across the entire stack --- from the database (Prisma) to the API (tRPC) and the UI (Next.js with TypeScript) --- it prevents bugs that often arise from mismatched data.
+The T3 Stack’s significance lies in its powerful combination of tools, which addresses common challenges in full-stack development. Its emphasis on type safety is a game-changer for mitigating runtime errors. By sharing types across the entire stack - Prisma for the database, tRPC for the API, and Next.js for the UI - it prevents bugs that often arise from mismatched data.
 Furthermore, the stack’s ``convention over configuration’’ philosophy greatly enhances developer productivity, allowing for quicker iteration and more efficient development. This streamlined workflow ensures that as an application scales, it remains highly maintainable and easier for new team members to work on.
 
 \subsubsection{MedusaJS}
@@ -69,7 +72,7 @@ From a business perspective, the performance enhancements of Next.js translate i
 React Native is an open-source framework that allows developers to build mobile applications for iOS and Android using a single codebase of JavaScript and React. This approach differs from traditional native development, where separate codebases are maintained for each platform. At its core, React Native translates the JavaScript code into platform-specific UI components, providing a user experience that is visually and functionally indistinguishable from a native application. The framework's ability to reuse code across different operating systems streamlines the development process while retaining access to native APIs for performance-critical functions. It has gained widespread adoption due to its ability to offer a unified development experience and a rich ecosystem for creating high-quality mobile applications. \cite{reactnative2025intro}
 
 \subsubsection{Expo}
-Expo is a development framework built on top of React Native that simplifies mobile application development. It provides a managed workflow with pre-configured tools, over-the-air (OTA) updates, and access to a wide range of native APIs, which enables developers to rapidly prototype and deploy applications. Expo’s approach lowers the barrier to entry for mobile development by abstracting away complex native setup processes, allowing teams to focus on the application logic. The framework is particularly valuable for accelerating the delivery of Minimum Viable Products (MVPs) and streamlining app lifecycle management, despite potential limitations in its managed environment for applications requiring advanced native modules. \cite{expo2024coreconcepts}
+Expo is a development framework built on top of React Native that simplifies mobile application development. It provides a managed workflow with pre-configured tools, over-the-air (OTA) updates, and access to a wide range of native APIs, which enables developers to rapidly prototype and deploy applications. Expo’s approach lowers the barrier to entry for mobile development by abstracting away complex native setup processes, allowing teams to focus on the application logic. The framework is particularly valuable for accelerating the delivery of minimum viable products (MVPs) and streamlining app lifecycle management, despite potential limitations in its managed environment for applications requiring advanced native modules. \cite{expo2024coreconcepts}
 
 \subsubsection{tRPC}
 tRPC is a framework designed for building fully type-safe APIs in TypeScript applications\cite{trpc2025quickstart}. Its core innovation lies in its ability to eliminate the need for traditional API schema definitions, such as those used in REST or GraphQL, by sharing type definitions directly between the client and the server. This architectural approach ensures end-to-end type safety, which effectively mitigates common runtime errors associated with data contract mismatches and streamlines the maintenance of both frontend and backend systems. By providing developers with real-time autocompletion and compile-time error checking, tRPC significantly enhances the developer experience and accelerates the development cycle. This provides a lightweight and strongly typed communication layer that exemplifies a growing trend in modern full-stack development, prioritizing efficiency, developer experience, and system reliability. For a visual representation of the tRPC architecture, please refer to the (Figure~\ref{fig:trpc-arch-overview}) below.
@@ -130,13 +133,13 @@ SevenRooms \cite{sevenrooms2025ourstory} is a platform widely adopted in the lux
 \thesisfigure{ch2-seven-rooms.png}{Example of the SevenRooms CRM User Interface}{Example of the SevenRooms CRM User Interface}{sevenrooms2025ourstory}{seven-rooms-crm}
 
 \subsubsection{PlatinumList}
-PlatinumList [26] is a prominent ticketing and event booking platform in the Middle East and North Africa (MENA) region. Its primary function is to support the discovery and booking of concerts, attractions, and exclusive events. Example UI of the PlatinumList can be observed in the (Figure~\ref{fig:platinum-list-discovery-page}) below. The platform's API is crucial for enabling the project to offer real-time availability and secure ticket purchases for a wide array of regional events. This integration is key to the platform's value proposition, as it provides direct, seamless access to a curated selection of experiences that are highly sought after by the target demographic.
-\thesisfigure{ch2-platinum-list.png}{Discovery PlatinumList Page}{Discovery PlatinumList Page}{platinumlist2025dubai}{platinum-list-discovery-page}
+PlatinumList [26] is a prominent ticketing and event booking platform in the Middle East and North Africa (MENA) region. Its primary function is to support the discovery and booking of concerts, attractions, and exclusive events. The platform's API is crucial for enabling the project to offer real-time availability and secure ticket purchases for a wide array of regional events. This integration is key to the platform's value proposition, as it provides direct, seamless access to a curated selection of experiences that are highly sought after by the target demographic.
 
 \subsubsection{Stripe}
 \label{sec:stripe}
 Stripe \cite{stripe2025homepage} is a global leader in online payment infrastructure, providing a developer-centric suite of APIs and tools for managing financial transactions. Its core function is to provide the building blocks that enable developers to implement various payment functionalities directly within their applications. This includes support for one-time checkouts and recurring subscription billing, which are essential for the project's tiered membership model. Stripe's robust platform also provides integrated features for fraud prevention and security, which are critical for ensuring the integrity and reliability of all financial transactions within the application. Its modular design and comprehensive documentation allow for seamless integration, enabling developers to build a secure and scalable payment system tailored to the project's specific needs.
 
+\newpage
 \subsubsection{Freshdesk}
 Freshdesk \cite{freshworks2025freshdesk} is a comprehensive customer support platform that facilitates omnichannel support, ticketing systems, and automation workflows. It is designed to centralize and streamline customer communications across multiple channels, including email, chat, and social media. The integration of Freshdesk provides the project with the necessary tools to manage member inquiries and support tickets efficiently. This ensures that the concierge and administrative teams can provide timely and consistent support, improving customer satisfaction and the overall reliability of the service.
 
@@ -212,7 +215,7 @@ The John Paul Group \cite{johnpaul2025programmes} is a global leader in premium 
 The group's key features include a wide range of concierge services, from travel and entertainment to home and well-being. It provides a human-centric approach, with a team of highly skilled and multilingual concierge specialists available 24/7. The John Paul Group also offers white-label solutions, allowing its corporate partners to integrate concierge services directly into their own products.
 The main advantage of the John Paul Group is its extensive experience in both the B2B and B2C markets. This dual focus allows it to serve a broader range of clients and provides valuable insights into the different needs of corporate partners and individual members. Its strong corporate relationships give it a unique position in the market.
 
-\subsection{Comparison chart on Market Research}
+\subsection{Competitor Benchmarking Matrix}
 \input{tables/market-comparison}
 Based on the competitive analysis (Table~\ref{tab:market-comparison}), the Adnexio platform is positioned as a distinct and highly competitive solution in the luxury services sector.
 \begin{enumerate}                                                                  
