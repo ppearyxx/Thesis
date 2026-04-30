@@ -1,7 +1,12 @@
-\begin{center}
+\begingroup
+\setlength{\LTleft}{\fill}
+\setlength{\LTright}{\fill}
+\setlength{\LTcapwidth}{\linewidth}
+\setlength{\tabcolsep}{4pt}
 \footnotesize
 \renewcommand{\arraystretch}{1.4}
-\begin{longtable}{|>{\centering\arraybackslash}p{2.8cm}|>{\centering\arraybackslash}p{3.5cm}|>{\centering\arraybackslash}p{4.2cm}|>{\centering\arraybackslash}p{2.5cm}|}
+\captionsetup{justification=raggedright,singlelinecheck=false}
+\begin{longtable}{|>{\centering\arraybackslash}p{0.18\linewidth}|>{\centering\arraybackslash}p{0.22\linewidth}|>{\centering\arraybackslash}p{0.27\linewidth}|>{\centering\arraybackslash}p{0.16\linewidth}|}
 \caption{Email template inventory}
 \label{tab:email-templates} \\
 \hline
@@ -46,4 +51,4 @@ Membership Invite
 \hline
 
 \end{longtable}
-\end{center}
+\endgroup

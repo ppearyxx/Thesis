@@ -47,7 +47,7 @@ Docker is used only as a local development dependency for running the Supabase s
 \subsection{Authentication and Authorization}
 The authentication and authorization module is implemented on Supabase Auth, with session validation handled in the tRPC middleware layer of the Next.js API. This module realizes the design documented in Sections~\ref{section:User Registration Flow} and \ref{section:User Authentication and Authorization}.
 
-\textbf{Guest (Anonymous) Access.} The guest flow described in Section~\ref{subsection:Guest User Flow (Anonymous Access)} is fully implemented. When a user taps ``Continue as Guest'' on the welcome screen, the application invokes \texttt{supabase.auth.signInAnonymously()} with the Guest role embedded as metadata on the created session. The user is then routed into the main browsing experience as an authenticated anonymous session. Guest users can browse the catalog and add items to the cart but cannot complete bookings or modify profile data, with these restrictions enforced through the role-permissions matrix described below. Figure~\ref{fig:authentication-and-authorization-1} shows the welcome screen and the resulting browsing experience available to guest users.
+\textbf{Guest (Anonymous) Access.} The guest flow described in Section~\ref{subsection:Guest User Flow (Anonymous Access)} is fully implemented. When a user taps ``Continue as Guest'' on the welcome screen, the application invokes \texttt{supabase.\allowbreak auth.\allowbreak signIn\allowbreak Anonymously()} with the Guest role embedded as metadata on the created session. The user is then routed into the main browsing experience as an authenticated anonymous session. Guest users can browse the catalog and add items to the cart but cannot complete bookings or modify profile data, with these restrictions enforced through the role-permissions matrix described below. Figure~\ref{fig:authentication-and-authorization-1} shows the welcome screen and the resulting browsing experience available to guest users.
 \thesisfigure{ch4-authentication-and-authorization-1.png}{Guest Access Flow}{Guest 
   Access Flow \\ (a) welcome screen with ``continue as guest'' option, \\ (b) browse tab available to the anonymous session.}{}{authentication-and-authorization-1}
 
@@ -138,7 +138,7 @@ On the mobile side, internal experiences surface through the same product render
 \begin{itemize}
   \item \texttt{pricing\_model}: distinguishes per-event experiences from rentals, driving which booking configuration is rendered.
   \item \texttt{rental\_pricing}: exposes the three-tier price structure for rental experiences.
-  \item \texttt{duration\_hours}, \texttt{venue}, \texttt{max\_capacity}, \texttt{age\_restriction}, \texttt{weight\_limit}, \texttt{additional\_restrictions}: rendered as supporting detail on the experience detail screen.
+  \item \texttt{duration\_\allowbreak hours}, \texttt{venue}, \texttt{max\_\allowbreak capacity}, \texttt{age\_\allowbreak restriction}, \texttt{weight\_\allowbreak limit}, \texttt{additional\_\allowbreak restrictions}: rendered as supporting detail on the experience detail screen.
   \item \texttt{is\_sold\_out}: controls availability on the date picker; when true, the corresponding date slot is rendered as disabled.
   \item \texttt{terms\_text}: conditionally rendered as the mandatory acceptance block on the detail screen.
 \end{itemize}
@@ -169,7 +169,7 @@ Categories and tags are authored through the Medusa admin and consumed by the mo
 \subsubsection{Category Authoring and Hierarchy}
 The canonical list of categories is maintained within the Medusa backend, with no categories seeded from within this monorepo. Each category record carries a \texttt{metadata.image\_url} field that holds the cover image URL used for visual rendering on the mobile Explore tab, with a fallback image used where no URL is present.
 
-The Medusa query used by the mobile client includes the full descendant tree of each category (\texttt{include\_descendants\_tree: true}), but the mobile client renders only leaf categories, grouped visually under their parent. In other words, although the category hierarchy supports arbitrary depth in theory, the current rendering pattern treats it as a two-level structure for navigation purposes. Figure~\ref{fig:category-authoring-and-hierarchy} shows the Medusa admin categories page on the authoring side and the corresponding mobile Explore tab rendering on the consumption side.
+The Medusa query used by the mobile client includes the full descendant tree of each category (\texttt{include\_\allowbreak descendants\_\allowbreak tree:~true}), but the mobile client renders only leaf categories, grouped visually under their parent. In other words, although the category hierarchy supports arbitrary depth in theory, the current rendering pattern treats it as a two-level structure for navigation purposes. Figure~\ref{fig:category-authoring-and-hierarchy} shows the Medusa admin categories page on the authoring side and the corresponding mobile Explore tab rendering on the consumption side.
 
 \thesisfigure{ch4-category-authoring-and-hierarchy.png}{Category authoring and consumption}{Category authoring and consumption. \\ (a) Medusa admin categories page showing the configured category list with cover images. \\ (b) Mobile Explore tab rendering the same categories as visual tiles.}{}{category-authoring-and-hierarchy}
 
@@ -312,12 +312,14 @@ The four-stage conversational flow designed in Section~\ref{subsection:AI Itiner
 The builder is powered by GPT-4o via the Vercel AI SDK with a maximum of nine tool-call steps per response. Personalization is assembled at request time: the mobile client transmits the user's onboarding profile with each message, and the server bakes the user's interests, trip type, and dietary preferences (Section~\ref{subsection:User Onboarding and Personalization}) directly into the per-request system prompt.
 GPT-4o is given access to nine registered tools covering four capabilities:
 
+{\sloppy
 \begin{enumerate}
-  \item \textbf{Profile read/write} --- \texttt{get\_user\_travel\_dates}, \texttt{update\_user\_travel\_dates}, \texttt{get\_user\_preferred\_pace}, \texttt{update\_user\_preferred\_pace}.
-  \item \textbf{Catalog query} --- \texttt{get\_available\_products} filters the Medusa catalog by dates, interests, and pace.
-  \item \textbf{Itinerary assembly} --- \texttt{create\_itinerary\_from\_products}, \texttt{update\_itinerary}, \texttt{publish\_itinerary}.
-  \item \textbf{Knowledge retrieval} --- \texttt{search\_knowledge\_base} performs semantic vector search over user-uploaded documents.
+  \item \textbf{Profile read/write} --- \texttt{get\_\allowbreak user\_\allowbreak travel\_\allowbreak dates}, \texttt{update\_\allowbreak user\_\allowbreak travel\_\allowbreak dates}, \texttt{get\_\allowbreak user\_\allowbreak preferred\_\allowbreak pace}, \texttt{update\_\allowbreak user\_\allowbreak preferred\_\allowbreak pace}.
+  \item \textbf{Catalog query} --- \texttt{get\_\allowbreak available\_\allowbreak products} filters the Medusa catalog by dates, interests, and pace.
+  \item \textbf{Itinerary assembly} --- \texttt{create\_\allowbreak itinerary\_\allowbreak from\_\allowbreak products}, \texttt{update\_\allowbreak itinerary}, \texttt{publish\_\allowbreak itinerary}.
+  \item \textbf{Knowledge retrieval} --- \texttt{search\_\allowbreak knowledge\_\allowbreak base} performs semantic vector search over user-uploaded documents.
 \end{enumerate}
+\par}
 
 \subsection{Generated Itinerary Output and Cart Integration}
 The itinerary is delivered through streamed markdown in the chat, while the day-by-day card layout is rendered from the structured tool-result object returned by \texttt{create\_itinerary\_from\_products}. Titles, times, and prices are parsed from the tool's JSON output rather than from free-text prose, avoiding the brittleness of prose-parsing while preserving the conversational feel.
@@ -343,7 +345,7 @@ The customer management surface lives in the Medusa admin. Each registered membe
 
 \textbf{Elite Invites.} The Elite-request pathway is wired end-to-end through this monorepo, the Medusa backend, and a Supabase Edge Function. The flow is:
 \begin{enumerate}
-  \item The mobile client calls the \texttt{invites.createInvite} tRPC procedure via the \texttt{useRequestEliteAccess} hook.
+  \item The mobile client calls the \texttt{invites.\allowbreak createInvite} tRPC procedure via the \texttt{use\allowbreak Request\allowbreak Elite\allowbreak Access} hook.
   \item The procedure posts to Medusa's \texttt{/admin/membership-invites} endpoint, which persists the invite record visible in the Medusa admin's Invites sidebar.
   \item A Supabase Edge Function (\texttt{smart-invite-user}) dispatches the invite email to the prospective member using the Supabase \texttt{invite\_user.html} template.
 \end{enumerate}
