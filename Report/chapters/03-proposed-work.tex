@@ -4,8 +4,11 @@
 \section{System Context Diagram}
 \thesisfigure{ch3-system-context-diagram.png}{System Context Diagram}{System       
   Context Diagram}{}{system-context-diagram}
-The System Context Diagram provides a high-level overview of the Adnexio platform, defining its boundaries and illustrating the primary interactions between the system, its users (actors), and other external systems. It treats the platform as a single entity, focusing on its external relationships rather than its internal technical architecture.
+The System Context Diagram (SCD) was the first design artifact produced for the Adnexio platform, undertaken before any internal architectural decomposition. This sequencing reflects a project-specific reality: Adnexio depends on multiple third-party systems for booking inventory, payment processing, transactional email, and AI generation, while serving three user categories with materially different access patterns. Without an explicit agreement on what falls inside the platform versus what is consumed externally, downstream decisions about authorization, data ownership, and integration responsibility could not have been made coherently.
 
+The methodology introduced in Section~\ref{subsubsection:System Context Diagram}, Figure~\ref{fig:system-context-diagram} treats the platform as a single bounded entity at this level the decomposition into Domain-Driven Design domains is deferred to the System Architecture Design that follows. The diagram reads outside-in: external actors are positioned on one perimeter and third-party systems on the other, with the platform at the centre identifying the five top-level domains (User Management, Booking Management, Payments, AI Features, and Admin Tools) that are elaborated in subsequent sections. Two design decisions are encoded in this view. First, actors are grouped into three categories rather than two because each set carries distinct authentication and Row-Level Security treatment (Section~\ref{section:User Authentication and Authorization}). Second, vendor APIs, payment infrastructure, email delivery, and large-language-model inference are treated as bounded externalities rather than reimplemented internally, allowing engineering effort to focus on the orchestration and curation layer that constitutes the platform's competitive value.
+
+\newpage
 \subsection{External Actors}
 The diagram identifies three main types of external actors who interact with the platform:
 \begin{itemize}
@@ -61,6 +64,7 @@ The deployment pipeline is delineated into two automated tracks:
     \end{itemize}
     \item \textbf{The Admin Track} The lower track manages the Admin Repository, which is isolated from client-side dependencies. Updates trigger a deployment to Render, which hosts the backend infrastructure (MedusaJS). Similar to the application track, this workflow enforces a ``DB Migration'' step against the underlying PostgreSQL database to ensure data integrity prior to updating the live Admin Portal.
 \end{enumerate}
+\newpage
 \section{User Roles \& Permissions}
 \label{section:user-roles-permissions}
 \input{tables/user-roles}
@@ -181,8 +185,13 @@ The Adnexio platform's commerce functionality is supported by the Stripe payment
 \label{subsection:Non-Subscription Payment Flow}
 The non-subscription flow is used for one-time payments, such as booking a single experience or purchasing goods through the platform, primarily supporting the \textbf{Essential} user base. This flow is synchronous, with the transaction status immediately confirmed by the mobile application
 
+{
+\setlength{\textfloatsep}{4pt}
+\setlength{\intextsep}{4pt}
+\setlength{\floatsep}{4pt}
 \thesisfigure{ch3-non-subscription-payment-flow-1.png}{Non-Subscription Payment Sequence Diagram (Part 1)}{Non-Subscription Payment Sequence Diagram (Part 1)}{}{non-subscription-payment-sequence-diagram-1}
 \thesisfigure{ch3-non-subscription-payment-flow-2.png}{Non-Subscription Payment Sequence Diagram (Part 2)}{Non-Subscription Payment Sequence Diagram (Part 2)}{}{non-subscription-payment-sequence-diagram-2}
+}
 
 The mobile application (Expo App) initiates the checkout process by transmitting the order payload, including the selected experience metadata and user identity, to the Next.js Server.
 The server consults the Supabase Database to verify the existence of a persistent \texttt{stripe\_customer\_id}. If the ID is absent, a new customer object is created within Stripe via the Stripe API, and the resultant ID is securely persisted in the user's profile record in Supabase.
@@ -196,27 +205,46 @@ The app utilizes the \texttt{client\_secret} to initialize the secure, PCI-compl
 Upon receiving successful payment confirmation, the Expo App transmits the final session ID to the Next.js Server for server-side verification.
 The server retrieves the conclusive transaction status from Stripe, confirms the success, marks the corresponding booking/order record as Confirmed in the Supabase Database, and triggers transactional emails (via Resend), thereby granting the user immediate access to the purchased service.
 \subsection{Recurring Subscription Payment Flow}
-The Elite tier subscription flow is mandated for the collection of recurring revenue (annual or monthly), leveraging Stripe's subscription engine for automated billing and lifecycle management. The entire process, detailed in Figure~\ref{fig:subscription-payment-sequence-diagram-1} and ~\ref{fig:subscription-payment-sequence-diagram-2}, Elite Subscription Sequence Diagram, is inherently asynchronous, relying on webhooks for maintaining data synchronization and ensuring continuous access control. \\
-\thesisfigure{ch3-recurring-subscription-payment-flow-1.png}{Subscription Payment Sequence Diagram (Part 1)}{Subscription Payment Sequence Diagram (Part 1)}{}{subscription-payment-sequence-diagram-1}
-\thesisfigure{ch3-recurring-subscription-payment-flow-2.png}{Subscription Payment Sequence Diagram (Part 2)}{Subscription Payment Sequence Diagram (Part 2)}{}{subscription-payment-sequence-diagram-2}
+The Elite tier subscription flow is mandated for the collection of recurring revenue (annual or monthly), leveraging Stripe's subscription engine for automated billing and lifecycle management. The entire process, detailed in Figure~\ref{fig:subscription-payment-sequence-diagram-1} and ~\ref{fig:subscription-payment-sequence-diagram-2}, Elite Subscription Sequence Diagram, is inherently asynchronous, relying on webhooks for maintaining data synchronization and ensuring continuous access control.
 
 \begin{enumerate}
     \item \textbf{Subscription Selection and Backend Setup (Steps 1--6):} The user initiates the flow by selecting their preferred billing interval (Monthly/Yearly) on the Next.js Website. The Next.js Server retrieves the corresponding pricing table from the Stripe API and returns the Elite subscription options to the user.
     \item \textbf{Customer Management and Session Initialization (Steps 7--17):} The application requests the creation of a Payment Intent, prompting the Next.js Server to perform a customer verification step against the Supabase Database. The server either retrieves an existing \texttt{stripe\_customer\_id} or creates a new customer record via the Stripe API. A Stripe Checkout Session is then created in subscription mode, and the resulting \texttt{client\_secret} is returned to the application to initialize the secure payment interface.
     \item \textbf{Payment Processing and Access Grant (Steps 18--22):} The user completes the payment within the secure PaymentSheet. Upon success, the application sends the session ID back to the Next.js Server for verification. The server retrieves the final subscription details from Stripe, confirms the payment, and instantly confirms the Elite subscription activation in the Supabase Database, granting the user immediate Elite privileges.
     \item \textbf{Asynchronous Official Sync (Webhook Processing) (Steps 23):} This parallel process is critical for data permanence. Stripe initiates the official sync by sending a \texttt{checkout.session.completed} event to the dedicated Stripe Webhook endpoint. The endpoint verifies the signature, processes the subscription data, and inserts or updates the full subscription record (including the \texttt{stripe\_subscription\_id} and Status: Active) into the Supabase Database. This ensures database state consistency with the Stripe billing engine.
+    \newpage
     \item \textbf{Future Billing and Status Management (Steps 24--25):} The webhook infrastructure maintains the integrity of the subscription lifecycle and automatically enforces access control:
     \begin{enumerate}
         \item \textbf{Successful Renewal (Steps 24):} 
         \begin{enumerate}
             \item Stripe sends an \texttt{invoice.paid} event. The webhook verifies the event and confirms the subscription status remains Active in the database.
         \end{enumerate}
-        \item \textbf{Payment Failure (Steps 25):} 
+        \item \textbf{Payment Failure (Steps 25):}
         \begin{enumerate}
             \item Stripe sends an \texttt{invoice.payment\_failed} event. The webhook automatically marks the user's subscription record as \texttt{past\_due} in the database, triggering alerts and restricting Elite privileges.
         \end{enumerate}
     \end{enumerate}
 \end{enumerate}
+
+{
+\setlength{\textfloatsep}{4pt}
+\setlength{\intextsep}{4pt}
+\setlength{\floatsep}{4pt}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\textwidth, height=0.65\textheight, keepaspectratio]{ch3-recurring-subscription-payment-flow-1.png}
+  \captionsetup{justification=centering}
+  \caption{Subscription Payment Sequence Diagram (Part 1)}
+  \label{fig:subscription-payment-sequence-diagram-1}
+\end{figure}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth, height=0.55\textheight, keepaspectratio]{ch3-recurring-subscription-payment-flow-2.png}
+  \captionsetup{justification=centering}
+  \caption{Subscription Payment Sequence Diagram (Part 2)}
+  \label{fig:subscription-payment-sequence-diagram-2}
+\end{figure}
+}
 
 \section{Integrate external experience to system}
 \label{section:Integrate external experience to system}
@@ -224,9 +252,10 @@ Since the platform integrates with the PlatinumList API, which serves as a prima
 \subsection{Matching Data using from API with Application side}
 To ensure optimal performance on the mobile application, the system implements a strict data processing pipeline. The raw data received from the external API often contains extensive administrative metadata that is irrelevant to the user-facing mobile client. Therefore, this pipeline filters and optimizes the data, ensuring that only essential fields such as visual assets, geospatial coordinates, and core pricing information are transmitted to the user's device. This optimization minimizes latency and reduces bandwidth consumption.
 
+Beyond the static descriptive fields detailed in Figure~\ref{fig:matching-data-api-1}, the integration must also handle dynamic inventory data. The Platinumlist API provides a secondary \texttt{event\_shows} dataset, which is critical for the application's booking engine. The mobile client parses this array to determine valid start times and visualizes seat availability directly on the calendar interface.
+
 \thesisfigure{ch3-matching-data-using-from-API-with-application-side-1.png}{Data Binding and UI Mapping}{Data Binding and UI Mapping}{}{matching-data-api-1}
 
-Beyond the static descriptive fields detailed in Figure~\ref{fig:matching-data-api-1}, the integration must also handle dynamic inventory data. The Platinumlist API provides a secondary \texttt{event\_shows} dataset, which is critical for the application's booking engine. The mobile client parses this array to determine valid start times and visualizes seat availability directly on the calendar interface.
 \thesisfigure{ch3-matching-data-using-from-API-with-application-side-2.png}{Booking Interface and Ticket Selection}{Booking Interface and Ticket Selection}{}{matching-data-api-2}
 While the experience details page relies on static content, the booking interface requires real-time synchronization with the backend inventory system. Figure~\ref{fig:matching-data-api-2}, illustrates the schema binding for the reservation workflow.
 
@@ -258,6 +287,7 @@ Product tags are managed under the Settings > Product Tags section of the admin 
 \section{Itinerary System Design}
 The Adnexio platform supports two distinct itinerary creation modalities, designed to serve different user segments and administrative needs.
 
+\newpage
 \subsection{Itinerary Types}
 \begin{enumerate}
     \item \textbf{Pre-Made Itineraries (Admin-Created):} Curated itinerary bundles created and published by the Adnexio administrative team. These are available to both Essential and Elite users and are discoverable through the Itinerary tab of the mobile application. Each pre-made itinerary is a structured, multi-day plan that groups a set of experiences into a single purchasable bundle.
