@@ -26,15 +26,41 @@ Beyond the user-facing features, the project produced a set of supporting capabi
 The project also produced organizational learnings that are worth recording. This engagement introduced the team to retrieval-augmented generation and large-language-model integration in a production context for the first time. The learning curve was managed through structured knowledge-sharing sessions and mentorship from a senior engineer on an adjacent team, and the experience reinforced that integrating AI into a commercial product is less about the underlying models themselves and more about the surrounding system design prompt discipline, tool structure, context management, and output contracts. These are lessons that carry forward to future projects in the same space.
 
 \section{Limitation}
+\label{section:Limitation}
 The Adnexio platform was evaluated through a five-participant internal study (Section~\ref{subsection:Methodology}) and a feature-comparison against AI travel-planning platforms (Section~\ref{subsection:Feature Comparison Against AI Travel-Planning Platforms}). A broader user-satisfaction evaluation with the platform's target demographic was not conducted, and the reasons are worth stating directly.
 
 Target-user access was structurally unavailable during the project period. The platform is designed for high-net-worth individuals in the United Arab Emirates and the broader Middle East region. Conducting user-satisfaction testing with representative members of this demographic was not feasible during the project for two intersecting reasons:
 
 \begin{enumerate}
-    \item \textbf{Regional conditions.} The ongoing Middle East conflict during the project period disrupted both the target market's travel and discretionary spending patterns and the client's ability to coordinate user research in the region. Recruiting representative Adnexio users for structured evaluation was not practically achievable under these conditions.
+    \item Regional conditions. The ongoing Middle East conflict during the project period disrupted both the target market's travel and discretionary spending patterns and the client's ability to coordinate user research in the region. Recruiting representative Adnexio users for structured evaluation was not practically achievable under these conditions.
     \item Internal substitution is not a valid proxy. The only available alternative testing with the internal development team or with Thai participants accessible to the project team in Bangkok would not produce findings meaningfully transferable to the actual target demographic. The expectations, spending patterns, and lifestyle contexts of the platform's intended users are sufficiently distinct from any available substitute population that a satisfaction score collected from internal or non-target users would misrepresent the platform's true fitness for purpose.
 \end{enumerate}
 
 For these reasons, evaluation was scoped to dimensions that do not depend on representative-user access: speed and accuracy of the AI builder against the platform's own manual planning flow (measurable with any technically capable participant), and feature parity and differentiation against competitor AI travel-planning platforms (measurable by direct observation). These are honest partial evaluations they demonstrate that the system performs as designed and compares favorably on capability against the market without making claims about subjective user satisfaction that the available evidence does not support.
 
+\vspace{1em}
+
 In summary, this project successfully demonstrates the feasibility of combining conversational AI with structured commerce infrastructure to serve a time-poor, high-expectation customer segment. The delivered solution addresses the core pain points of fragmented manual concierge workflows and lays a solid foundation for future expansion to additional vendor integrations, to broader user cohorts, and to deeper personalization as the platform matures. This work reflects the importance of aligning technical decisions with real-world commercial outcomes and highlights the value of systematic planning, adaptive scoping, and honest evaluation in software engineering projects delivered under realistic constraints.
+
+\section{Future Refinements}
+\label{section:Future Refinements}
+
+Three improvements would meaningfully strengthen the platform: a smarter AI retrieval layer, a proper user evaluation against the actual target demographic, and a richer set of input modes for the AI builder.
+
+\subsection{Retrieval-Augmented Recommendation via PGVector}
+
+The AI itinerary builder currently retrieves candidate experiences by filtering the Medusa catalog on tags and dates. This works at the present catalog size, but it scales poorly. Every additional product makes the tool-result payload larger, which means more prompt tokens for GPT-4o, slower responses, and higher per-call cost. Tag overlap is also a coarse proxy for what the user actually means in natural language a request for ``a quiet evening with great food'' is poorly served by tag matching alone.
+
+The fix is retrieval-augmented generation. Encode each product's title, description, and metadata as a vector embedding at publish time, and store the embeddings in PostgreSQL using the PGVector extension that the platform already provisions. At query time, embed the user's intent and return only the top-$k$ most semantically similar products instead of a tag-filtered slice. The payload shrinks, response time drops, and recommendations get materially better because semantic intent is captured directly rather than approximated through tags. The same embedding layer also unlocks personalized ordering on the Explore tab later, so the investment compounds beyond the AI builder.
+
+\subsection{Target-Demographic User Evaluation}
+
+The current evaluation was deliberately scoped to what could be measured without access to representative users speed and accuracy of the AI builder, and feature parity against competing platforms. That scoping is methodologically honest, but it leaves the most important question open: does the platform actually serve its intended users well?
+
+The next step is a structured user study with twenty to thirty representative high-net-worth residents and visitors of the United Arab Emirates, conducted once regional conditions and research access allow. The study should measure satisfaction (Net Promoter Score, qualitative interviews), commercial efficacy (conversion from itinerary draft to confirmed booking), and retention (whether users return past the novelty phase). These dimensions cannot be substituted by internal or non-target participants, and they are the dimensions on which any claim about fitness for purpose ultimately rests.
+
+\subsection{Multi-Modal AI Interaction}
+
+The AI builder is text-only today. That under-uses the input modes a luxury concierge experience naturally invites: a spoken request, a photograph of a place the user wants to emulate, a screenshot of an event they have heard about. GPT-4o supports voice and vision natively; the platform's existing AI infrastructure already exposes both message types.
+
+Two upgrades stand out. A voice mode using GPT-4o's realtime audio API would let users dictate a brief and receive spoken responses, matching the white-glove interaction the human concierge offers. Image-grounded queries ``find me something like this'' attached to a photo would add an input mode that none of the competing AI travel-planning platforms currently support, and that maps directly onto how inspiration-driven luxury booking actually happens. Both extend the existing builder rather than replace it, preserving the end-to-end connection from chat to checkout that distinguishes the platform from text-only or generation-only competitors.
