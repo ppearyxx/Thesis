@@ -182,7 +182,7 @@ The Adnexio platform's commerce functionality is supported by the Stripe payment
 The non-subscription flow is used for one-time payments, such as booking a single experience or purchasing goods through the platform, primarily supporting the \textbf{Essential} user base. This flow is synchronous, with the transaction status immediately confirmed by the mobile application
 
 \thesisfigure{ch3-non-subscription-payment-flow-1.png}{Non-Subscription Payment Sequence Diagram (Part 1)}{Non-Subscription Payment Sequence Diagram (Part 1)}{}{non-subscription-payment-sequence-diagram-1}
-\thesisfigure{ch3-non-subscription-payment-flow-2.png}{Non-Subscription Payment Sequence Diagram (Part 2)}{Non-Subscription Payment Sequence Diagram (Part 2)}{}{subscription-payment-sequence-diagram-2}
+\thesisfigure{ch3-non-subscription-payment-flow-2.png}{Non-Subscription Payment Sequence Diagram (Part 2)}{Non-Subscription Payment Sequence Diagram (Part 2)}{}{non-subscription-payment-sequence-diagram-2}
 
 The mobile application (Expo App) initiates the checkout process by transmitting the order payload, including the selected experience metadata and user identity, to the Next.js Server.
 The server consults the Supabase Database to verify the existence of a persistent \texttt{stripe\_customer\_id}. If the ID is absent, a new customer object is created within Stripe via the Stripe API, and the resultant ID is securely persisted in the user's profile record in Supabase.
